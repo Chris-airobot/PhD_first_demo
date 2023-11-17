@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find first_demo)/launch/setup_robot.launch"/>
+    <include file="$(find first_demo)/launch/setup_405.launch"/>
+</launch>

@@ -1,0 +1,10 @@
+<launch>
+    <arg name="arms" default="gen3_lite"/>
+    <arg name="robot_names" default="kinova_gen3_lite"/> 
+    <include file="$(find kortex_driver)/launch/kortex_driver.launch">
+        <arg name="arm" value="gen3_lite"/>
+        <arg name="robot_name" value="$(arg robot_names)"/>
+        <!-- <arg name="use_actual" value="true"/> -->
+    </include>
+
+</launch>
