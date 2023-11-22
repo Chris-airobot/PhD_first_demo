@@ -33,7 +33,7 @@ class RobotInitialization:
                                                     queue_size=20)
         
         self.init_scene()
-        self.init_pose()
+        # self.init_pose()
         
         
     def move_gripper(self, value):
@@ -106,3 +106,17 @@ class RobotInitialization:
         joint_values = values
         self.arm_group.go(joint_values)
         
+
+    
+    def camera_calibration_pose(self):
+        # Gripper Pose
+        # self.move_gripper(0.85)
+        # Calibration pose of the robot
+        joint_values = self.arm_group.get_current_joint_values()
+        joint_values[0] = -30 * pi/180
+        joint_values[1] = -55 * pi / 180
+        joint_values[2] = 89 * pi / 180
+        joint_values[3] = 55 * pi / 180
+        joint_values[4] = -59 * pi / 180
+        joint_values[5] = -69 * pi / 180
+        self.arm_group.go(joint_values, wait=True)

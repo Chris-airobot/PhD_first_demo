@@ -14,3 +14,10 @@ Necessary modification for the Packages:
 3. easy_handeye/easy_handeye/launch/calibrate.launch:<br>
    Line 12, default is changed to "/kinova_gen3_lite", which is the catkin workspace of the folder
    Line 13, default is changed from "Manipulator" to "arm", the package is written for UR series robot, different name conventions 
+
+
+
+
+# Based on Jason's Code, the package that I need:
+
+- gpd_ros and gpd (basically the same type)

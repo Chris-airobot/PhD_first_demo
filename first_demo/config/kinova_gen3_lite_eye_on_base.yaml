@@ -7,12 +7,12 @@ parameters:
   robot_base_frame: base_link
   robot_effector_frame: tool_frame
   tracking_base_frame: camera_link
-  tracking_marker_frame: camera_marker
+  tracking_marker_frame: aruco_marker_frame
 transformation:
-  qw: 0.9822573404156119
-  qx: 0.018422643230676383
-  qy: -0.181302117549749
-  qz: -0.04427940365475233
-  x: -0.08641308306207213
-  y: -0.08091663353705948
-  z: -0.11589660201487739
+  qw: 0.45325293325278926
+  qx: -0.4905523301944451
+  qy: -0.507049360131059
+  qz: 0.5448129369143379
+  x: 1.1485363404237483
+  y: 0.009071432498892168
+  z: 0.26145678377949916

@@ -1,0 +1,20 @@
+parameters:
+  eye_on_hand: false
+  freehand_robot_movement: false
+  move_group: arm
+  move_group_namespace: /kinova_gen3_lite
+  namespace: /kinova_gen3_lite_eye_on_base/
+  robot_base_frame: base_link
+  robot_effector_frame: tool_frame
+  tracking_base_frame: camera_link
+  tracking_marker_frame: aruco_marker_frame
+transformation:
+  qw: -5.40285168e-02  
+  qx:  -3.75314869e-02                                     
+  qy: 2.32089921e-04
+  qz:  9.97833780e-01
+  x: 1.1485363404237483
+  y: 0.009071432498892168
+  z: 0.26145678377949916
+
+# turned axis

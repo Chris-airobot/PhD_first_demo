@@ -1,4 +1,6 @@
 <launch>
     <include file="$(find first_demo)/launch/setup_robot.launch"/>
     <include file="$(find first_demo)/launch/setup_405.launch"/>
+    <include file="$(find first_demo)/launch/aruco_ros_single.launch"/>
+    <include file="$(find first_demo)/launch/setup_camera_publish.launch"/>
 </launch>
