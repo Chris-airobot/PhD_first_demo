@@ -5,6 +5,12 @@ from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from geometry_msgs.msg import Pose
 from math import pi
 
+'''
+    This file is used for mannual turning axis of the roll, pitch, yaw and quaternion
+
+'''
+
+
 qw = 0.45325293325278926
 qx= -0.4905523301944451
 qy= -0.507049360131059

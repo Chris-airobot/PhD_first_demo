@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+# Add this to change the namespace, otherwise the robot model cannot be found
 import os
 os.environ["ROS_NAMESPACE"] = "/kinova_gen3_lite"
 import sys

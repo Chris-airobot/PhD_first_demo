@@ -36,8 +36,14 @@ class RobotInitialization:
         # self.init_pose()
         
         
-    def move_gripper(self, value):
-    
+    def move_gripper(self, value: float):
+        '''
+        Moves the gripper to the relative positons
+        
+        Args:
+        value (float): a value from 0 to 1 to scale the gripper
+        
+        '''
         gripper_joint_names = rospy.get_param(rospy.get_namespace() + "gripper_joint_names", [])
         # We only need one joint name since the rest will respond to one of them
         gripper_joint_name = gripper_joint_names[0]
@@ -54,7 +60,9 @@ class RobotInitialization:
         return target
     
     def init_scene(self):
-        
+        '''
+        Adding a table under the robot to ensure it does not hit the table in reality
+        '''
         table_size = [2, 2, 0.87]
         
         table_pose = geometry_msgs.msg.PoseStamped()
@@ -70,6 +78,9 @@ class RobotInitialization:
     
     
     def init_pose(self):
+        '''
+        Hard-coded home pose (for easy_handeye package) of the robot
+        '''
         # home pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
         joint_values[0] = 0
@@ -81,7 +92,9 @@ class RobotInitialization:
         self.arm_group.go(joint_values, wait=True)
         
     def get_cartesion_pose(self):
-        # Get the current pose and display it
+        '''
+        Get the current pose and display it
+        '''
         pose = self.arm_group.get_current_pose()
         
         print(f'The cartesian pose is:')
@@ -91,7 +104,9 @@ class RobotInitialization:
     
 
     def get_arm_joint_values(self):
-        # Get the current joint and display it
+        '''
+        Get the current joint and display it
+        '''
         joints = self.arm_group.get_current_joint_values()
         
         for i in range(len(joints)):
@@ -101,7 +116,9 @@ class RobotInitialization:
     
     
     def reach_joint_angles(self, values):
-        # vertical pose of the robot
+        '''
+        vertical pose of the robot
+        '''
         joint_values = self.arm_group.get_current_joint_values()
         joint_values = values
         self.arm_group.go(joint_values)
@@ -109,8 +126,12 @@ class RobotInitialization:
 
     
     def camera_calibration_pose(self):
+        '''
+        Hard-coded calibration pose (for easy_handeye package) of the robot 
+        '''
+
         # Gripper Pose
-        # self.move_gripper(0.85)
+        self.move_gripper(0.85)
         # Calibration pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
         joint_values[0] = -30 * pi/180
