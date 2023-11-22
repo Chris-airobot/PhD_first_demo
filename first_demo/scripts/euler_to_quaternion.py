@@ -30,14 +30,13 @@ quaternion = (
     pose.orientation.w)
 
 angles = euler_from_quaternion(quaternion)
-print(angles)
 
 roll, pitch, yaw = angles[0], angles[1], angles[2]
 
 # pitch += pi/2
 yaw += pi/2
 roll += pi/2   # red axis stay the same, beside the two, the first one
-
+print(angles)
 quat = quaternion_from_euler (roll, pitch, yaw)
 print(f"quat is: {quat} in x, y, z, w")
 

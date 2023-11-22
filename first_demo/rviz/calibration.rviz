@@ -24,7 +24,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: Image
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -268,7 +268,7 @@ Visualization Manager:
       Velocity_Scaling_Factor: 1
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /aruco_single/result
+      Image Topic: /camera/color/image_raw
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -287,8 +287,6 @@ Visualization Manager:
         All Enabled: false
         arm_link:
           Value: false
-        aruco_marker_frame:
-          Value: true
         base_link:
           Value: true
         camera_color_frame:
@@ -334,8 +332,6 @@ Visualization Manager:
       Tree:
         base_link:
           camera_link:
-            aruco_marker_frame:
-              {}
             camera_color_frame:
               camera_color_optical_frame:
                 {}
@@ -372,7 +368,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -387,7 +383,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -416,7 +412,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.9274849891662598
+      Distance: 3.1967411041259766
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -432,9 +428,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: -0.11960168182849884
+      Pitch: -0.10960236936807632
       Target Frame: <Fixed Frame>
-      Yaw: 5.926730155944824
+      Yaw: 5.7517242431640625
     Saved: ~
 Window Geometry:
   Displays:
