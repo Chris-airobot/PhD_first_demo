@@ -21,3 +21,9 @@ Necessary modification for the Packages:
 # Based on Jason's Code, the package that I need:
 
 - gpd_ros and gpd (basically the same type)
+
+
+# Command for saving the pcd file:
+
+
+- rosrun pcl_ros pointcloud_to_pcd input:=/cloud_to_get_grasps_on \_prefix:=/home/riot/kinova_gen3_lite/src/first_demo/pcds/
