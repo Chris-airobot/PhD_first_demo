@@ -1,0 +1,34 @@
+<launch>
+
+
+   <node type="point_cloud2_assembler" pkg="laser_assembler" name="my_assembler">
+    <!-- cloud = topic to recieve clouds on -->
+    <remap from="cloud" to="pcl_stitcher_input_processed"/> 
+    <param name="max_clouds" type="int" value="400" />
+    <param name="tf_cache_time_secs" type="double" value="45.0" />
+    <!-- I think this sets the fixed frame to be base_link, and tf takes care of everything else-->
+    <param name="fixed_frame" type="string" value="base_link" />
+  </node>
+
+  <node name="realsense_processing" pkg="first_demo" type="camera_processing.py">
+    <param name="pcl_fwd_status" type="boolean" value="false" />
+    <param name="fwd_pcd_with_timer" type="boolean" value="false" />
+  </node>
+
+
+  <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
+
+  <node pkg="nodelet" type="nodelet" name="cropbox" args="load pcl/CropBox pcl_manager" output="screen">
+    <remap from="~input" to="/pcl_stitcher_input_raw" />
+    <remap from="~output" to="/pcl_stitcher_input_processed" />
+    <rosparam>
+      min_x: 0
+      max_x: 0.6
+      min_y: -0.2
+      max_y: 0.2
+      keep_organized: False
+      input_frame: base_link
+    </rosparam>
+  </node>
+
+</launch>

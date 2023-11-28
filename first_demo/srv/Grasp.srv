@@ -1,0 +1,5 @@
+float32 width
+float32 force
+---
+bool grasp_detected
+float32 actual_width

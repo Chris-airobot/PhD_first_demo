@@ -3,49 +3,195 @@
 import os
 os.environ["ROS_NAMESPACE"] = "/kinova_gen3_lite"
 import sys
+from typing import List, Union
 import rospy
-import moveit_commander
-import moveit_msgs.msg
-import geometry_msgs.msg
+from geometry_msgs.msg import Pose, PoseArray, PoseStamped, Quaternion, Vector3
 from math import pi
+from gpd_ros.msg import GraspConfig, GraspConfigList
 from robot_initialization import RobotInitialization
+from laser_assembler.srv import AssembleScans2, AssembleScans2Request
+from sensor_msgs.msg import PointCloud2
+from std_msgs.msg import Bool, Header
+from robot_initialization import RobotInitialization
+from tf.transformations import quaternion_from_matrix
+# from box_grasping.motion.ur3e_motion import MotionType, Ur3eMover
+# from box_grasping.utils.moveit_helper import load_joint_trajectory
+from utils import load_yaml, load_joint_trajectory, Config
+from first_demo.srv import PCLFwdStatus, PCLFwdStatusRequest
+from pathlib import Path
+import numpy as np
+import pyquaternion
 
 class FirstDemo:
     def __init__(self):
-       pass
+        rospy.init_node("demo")
     
+        rospy.wait_for_service("/realsense_processing/set_pcd_fwd_status_server")
+        self.set_pcd_fwding = rospy.ServiceProxy(
+            "/realsense_processing/set_pcd_fwd_status_server", PCLFwdStatus
+        )
+        
+        # Call the point cloud data service
+        rospy.wait_for_service("/realsense_processing/stitch_pcd_service")
+        self.stitch_pcds = rospy.ServiceProxy(
+            "/realsense_processing/stitch_pcd_service", AssembleScans2
+        )
+        
+        # Load the files about default movements
+        # self.params = Config.parse_obj(load_yaml(params_path))
+        # Robot Object       
+        self.robot = RobotInitialization()
+        self.grasp_process_timeout = rospy.Duration(10)
+        # Load the joint states in config/preset_locs.yaml        
+        # self.key_joint_states = load_yaml(Path(self.params.paths.root) / self.params.paths.key_locs)
     
-    
-    
+        # # Load the joint states in configs/trajectories/single_view_joints.csv
+        # self.scan_joints = load_joint_trajectory(
+        #     Path(self.params.paths.root) / self.params.paths.trajectories.scene_scan
+        # )
+        
+        
+        # Publish the point cloud data into the "/cloud_to_get_grasps_on" topic
+        self.get_grasps_pub = rospy.Publisher(
+            "/cloud_to_get_grasps_on", PointCloud2, queue_size=1
+        )
+
+        self.grasp_list: Union[List[GraspConfig], None] = None
+        
+        # Subscribe to the gpd topic and get the grasp gesture data, save it into the grasp_list through call_back function
+        self.gpd_sub = rospy.Subscriber(
+            "/detect_grasps/clustered_grasps", GraspConfigList, self.save_grasps
+        )
+        # Topic for visualization of the grasp pose
+        self.pose_pub = rospy.Publisher("/pose_viz", PoseArray, queue_size=1)
 
 
-def main():
-    rospy.init_node("first_test")
-    
-    robot = RobotInitialization()
-    robot.camera_calibration_pose()
-    # robot.move_gripper(1)
-    # print(f'Now for going to the Vertical Pose')
-    # input()
-    # vertical_pose_joints = [0,0,0,0,0,0]
-    # robot.reach_joint_angles(vertical_pose_joints)
-    
-    # print(f'Now for going to the Init Pose')
-    # input()
-    # robot.init_pose()
-    
-    # print(f'Move the gripper:')
-    # input()
-    # robot.move_gripper(0.8)
-    # print(f'Next')
-    # input()
-    # robot.move_gripper(0.5)
-    # print(f'Another')
-    # input()    
-    # robot.move_gripper(1)
-    # print(f'Final')
-    # input()
-    # robot.move_gripper(0.5)
+        self.temp = 0
+        rospy.sleep(1)
+        
+        
+        
+    def scan_object(self) -> PointCloud2:
+                
+        '''
+        Scanning the object while moving and getting the point cloud data of the object
+        
+        return:
+        stitched_cloud (PointCloud2): point cloud of the object
+        '''
+        
+        start_time = rospy.Time.now()
+        self.set_pcd_fwding(Bool(data=True))
+
+        # for joint in self.scan_joints:
+        #     self.robot.move(joint, motion_type=MotionType.joint)
+        #     rospy.sleep(0.01)
+        rospy.sleep(2)
+        self.set_pcd_fwding(Bool(data=False))
+        end_time = rospy.Time.now()
+
+        stitch_response = self.stitch_pcds(AssembleScans2Request(begin=start_time, end=end_time))
+        stitched_cloud: PointCloud2 = stitch_response.cloud
+        
+        return stitched_cloud
+
+    def save_grasps(self, data: GraspConfigList):
+        self.grasp_list = data.grasps
+        
+    def vector3ToNumpy(self, vec: Vector3) -> np.ndarray:
+        return np.array([vec.x, vec.y, vec.z])        
+        
+        
+    def main(self):
+        while not rospy.is_shutdown():
+            self.robot.init_pose()
+            start_time = rospy.Time.now()
+            
+            rospy.sleep(1)
+            
+            # Creates a bunch of grasping poses
+            self.grasp_list = None
+            
+            # Get the point cloud data of the object
+            pcd = self.scan_object()
+  
+            self.get_grasps_pub.publish(pcd)
+            
+            
+            # Just wait for the grasping, while the callback function is running at the back
+            while (
+                self.grasp_list is None
+                and rospy.Time.now() - start_time < self.grasp_process_timeout
+            ):
+                rospy.loginfo("waiting for grasps")
+                rospy.sleep(0.05)
+
+            if self.grasp_list is None:
+                rospy.logwarn("No grasps detected on pcl, restarting!!!")
+                continue
+            
+            
+            # Sort all grasps based on the gpd_ros's msg: GraspConfigList.grasps.score.data            
+            self.grasp_list.sort(key=lambda x: x.score.data, reverse=True)
+
+            grasp_performed = False
+            for grasp in self.grasp_list:
+                rot = np.zeros((3, 3))
+                # grasp approach direction
+                rot[:, 0] = self.vector3ToNumpy(grasp.approach)
+                # hand closing direction
+                rot[:, 1] = self.vector3ToNumpy(grasp.binormal)
+                # hand axis
+                rot[:, 2] = self.vector3ToNumpy(grasp.axis)
+                
+                # Rot shape:
+                # [approach.x  binormal.x  axis.x
+                #  approach.y  binormal.y  axis.y
+                #  approach.z  binormal.z  axis.z]
+                
+                homo_matrix = np.eye(4)
+                homo_matrix[:3, :3] = rot
+            
+                # Turn the roll pitch yaw thing into the quaternion axis
+                quat = quaternion_from_matrix(homo_matrix)
+                pos = grasp.position
+
+                grasp_pose = Pose(
+                    position=pos,
+                    orientation=Quaternion(x=quat[1], y=quat[2], z=quat[3], w=quat[0]),
+                )
+
+                grasp_pose_stamped = PoseStamped(
+                    pose=grasp_pose, header=Header(frame_id="base_link")
+                )
+                # Publish the grasp pose visualisation
+                self.pose_pub.publish(
+                    PoseArray(header=Header(frame_id="base_link"), poses=[grasp_pose])
+                )
+
+                # self.pose_pub.publish(grasp.approach)
+                grasp_move_done = self.robot.move(target=grasp_pose_stamped)
+                
+                if grasp_move_done:
+                    grasp_performed = True
+                    break
+
+            if not grasp_performed:
+                rospy.logwarn("No valid grasps planned to, restarting!!")
+                continue
+
+            self.robot.move_gripper(0.1)
+
+            rospy.sleep(0.1)
+
 
 if __name__ == '__main__':
-    main()
+    # params_path = "/home/jason/catkin_ws/src/ur_grasping/src/box_grasping/configs/base_config.yaml"
+    
+    try:
+        grasper = FirstDemo()
+        grasper.main()
+        # grasper.robot.move_gripper(0.3)
+
+    except KeyboardInterrupt:
+        pass

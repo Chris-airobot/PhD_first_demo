@@ -3,9 +3,12 @@ os.environ["ROS_NAMESPACE"] = "/kinova_gen3_lite"
 import sys
 import rospy
 import moveit_commander
+from typing import Tuple, Union
 import moveit_msgs.msg
 import geometry_msgs.msg
 from math import pi
+from moveit_msgs.msg import DisplayTrajectory, MoveItErrorCodes, RobotTrajectory
+PlanTuple = Tuple[bool, RobotTrajectory, float, MoveItErrorCodes]
 
 class RobotInitialization:
     def __init__(self):
@@ -63,13 +66,13 @@ class RobotInitialization:
         '''
         Adding a table under the robot to ensure it does not hit the table in reality
         '''
-        table_size = [2, 2, 0.87]
+        table_size = [2, 2, 0.86]
         
         table_pose = geometry_msgs.msg.PoseStamped()
         table_pose.header.frame_id = "base_link"
         table_pose.pose.position.x = 0  
         table_pose.pose.position.y = 0  
-        table_pose.pose.position.z = -table_size[2]/2 
+        table_pose.pose.position.z = -table_size[2]/2-0.000001 
         table_name = "table"
         self.scene.add_box(table_name, table_pose, size=table_size)
 
@@ -121,7 +124,7 @@ class RobotInitialization:
         '''
         joint_values = self.arm_group.get_current_joint_values()
         joint_values = values
-        self.arm_group.go(joint_values)
+        self.arm_group.go(joint_values, wait=True)
         
 
     
@@ -141,3 +144,22 @@ class RobotInitialization:
         joint_values[4] = -59 * pi / 180
         joint_values[5] = -69 * pi / 180
         self.arm_group.go(joint_values, wait=True)
+        
+    def move(self, target):
+        # self.arm_group.set_pose_target(target)
+        # return True
+        try:
+            self.arm_group.set_joint_value_target(target, True)
+            self.move_gripper(1)
+            plan_tuple: PlanTuple = self.arm_group.plan()
+            plan = self.unpack_plan(plan_tuple)
+            input("Plan to move")
+
+            
+            attempted = self.arm_group.execute(plan, wait=True)
+            
+        except:
+            attempted = False
+            
+            
+        return attempted
