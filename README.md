@@ -22,3 +22,16 @@ Necessary modification for the Packages:
 # Based on Jason's Code, the package that I need:
 
 - gpd_ros and gpd (basically the same type)
+
+
+# Command for saving the pcd file:
+
+
+- rosrun pcl_ros pointcloud_to_pcd input:=/cloud_to_get_grasps_on \_prefix:=/home/riot/kinova_gen3_lite/src/first_demo/pcds/
+
+
+## Dec 1:
+- Rule out the camera calibration as one of the potential problem for non correct grasping position  
+- Also checked the "gpd" package in low-level, and realize the grasp pose published is in "base_link" frame  
+- Switching from "tool_frame" to "end_effector_link" fixes the problem of the axis of ArUco makrer goes up
+- Still unclear about the reason why the pose is not correct

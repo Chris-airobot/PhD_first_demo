@@ -26,7 +26,7 @@ def main():
     rospy.init_node("first_test")
     
     robot = RobotInitialization()
-    # robot.camera_calibration_pose()
+    robot.camera_calibration_pose()
     # robot.move_gripper(1)
     # print(f'Now for going to the Vertical Pose')
     # input()
@@ -52,4 +52,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-  
+    # joints = [-0.206673, -1.704190, -0.010491, -1.653301, -1.514554, 1.803519]
+    
+    # for joint in joints:
+    #     print(joint * 180/pi)

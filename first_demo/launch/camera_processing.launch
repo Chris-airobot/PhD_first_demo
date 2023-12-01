@@ -22,10 +22,7 @@
     <remap from="~input" to="/pcl_stitcher_input_raw" />
     <remap from="~output" to="/pcl_stitcher_input_processed" />
     <rosparam>
-      min_x: 0
-      max_x: 0.6
-      min_y: -0.2
-      max_y: 0.2
+      min_x: 0.2
       keep_organized: False
       input_frame: base_link
     </rosparam>

@@ -2,25 +2,23 @@
 # Add this to change the namespace, otherwise the robot model cannot be found
 import os
 os.environ["ROS_NAMESPACE"] = "/kinova_gen3_lite"
-import sys
 from typing import List, Union
 import rospy
-from geometry_msgs.msg import Pose, PoseArray, PoseStamped, Quaternion, Vector3
-from math import pi
+from geometry_msgs.msg import Pose, PoseArray, Quaternion, Vector3
 from gpd_ros.msg import GraspConfig, GraspConfigList
 from robot_initialization import RobotInitialization
 from laser_assembler.srv import AssembleScans2, AssembleScans2Request
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Bool, Header
 from robot_initialization import RobotInitialization
-from tf.transformations import quaternion_from_matrix
 # from box_grasping.motion.ur3e_motion import MotionType, Ur3eMover
 # from box_grasping.utils.moveit_helper import load_joint_trajectory
-from utils import load_yaml, load_joint_trajectory, Config
+from utils import transform_pose
 from first_demo.srv import PCLFwdStatus, PCLFwdStatusRequest
 from pathlib import Path
 import numpy as np
 import pyquaternion
+from tf2_geometry_msgs import PoseStamped
 
 class FirstDemo:
     def __init__(self):
@@ -96,6 +94,7 @@ class FirstDemo:
         return stitched_cloud
 
     def save_grasps(self, data: GraspConfigList):
+        print(f'data is: {data}')
         self.grasp_list = data.grasps
         
     def vector3ToNumpy(self, vec: Vector3) -> np.ndarray:
@@ -149,18 +148,22 @@ class FirstDemo:
                 #  approach.y  binormal.y  axis.y
                 #  approach.z  binormal.z  axis.z]
                 
-                homo_matrix = np.eye(4)
-                homo_matrix[:3, :3] = rot
+
             
                 # Turn the roll pitch yaw thing into the quaternion axis
-                quat = quaternion_from_matrix(homo_matrix)
+                
+                quat = pyquaternion.Quaternion(matrix=rot)
                 pos = grasp.position
 
                 grasp_pose = Pose(
                     position=pos,
                     orientation=Quaternion(x=quat[1], y=quat[2], z=quat[3], w=quat[0]),
                 )
-
+                # print(f'Before transformation: {grasp_pose}\n\n')
+                
+                # grasp_pose = transform_pose(grasp_pose, 'camera_link', 'base_link')
+                # print(f'After transformation: {grasp_pose}')
+                
                 grasp_pose_stamped = PoseStamped(
                     pose=grasp_pose, header=Header(frame_id="base_link")
                 )
@@ -168,9 +171,13 @@ class FirstDemo:
                 self.pose_pub.publish(
                     PoseArray(header=Header(frame_id="base_link"), poses=[grasp_pose])
                 )
-
+                
+                
+                rospy.loginfo(f"Pose is: {grasp_pose_stamped}")
+                
                 # self.pose_pub.publish(grasp.approach)
                 grasp_move_done = self.robot.move(target=grasp_pose_stamped)
+                
                 
                 if grasp_move_done:
                     grasp_performed = True
@@ -181,7 +188,7 @@ class FirstDemo:
                 continue
 
             self.robot.move_gripper(0.1)
-
+            self.robot.init_pose()
             rospy.sleep(0.1)
 
 
@@ -192,6 +199,6 @@ if __name__ == '__main__':
         grasper = FirstDemo()
         grasper.main()
         # grasper.robot.move_gripper(0.3)
-
+        #[51 47 20]
     except KeyboardInterrupt:
         pass

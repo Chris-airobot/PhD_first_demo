@@ -72,7 +72,7 @@ class RobotInitialization:
         table_pose.header.frame_id = "base_link"
         table_pose.pose.position.x = 0  
         table_pose.pose.position.y = 0  
-        table_pose.pose.position.z = -table_size[2]/2-0.000001 
+        table_pose.pose.position.z = -table_size[2]/2-0.040001 
         table_name = "table"
         self.scene.add_box(table_name, table_pose, size=table_size)
 
@@ -86,13 +86,20 @@ class RobotInitialization:
         '''
         # home pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
+        # joint_values[0] = 0
+        # joint_values[1] = -16 * pi / 180
+        # joint_values[2] = 75 * pi / 180
+        # joint_values[3] = 0
+        # joint_values[4] = -60 * pi / 180
+        # joint_values[5] = 0
         joint_values[0] = 0
-        joint_values[1] = -16 * pi / 180
-        joint_values[2] = 75 * pi / 180
+        joint_values[1] = 0
+        joint_values[2] = 0
         joint_values[3] = 0
-        joint_values[4] = -60 * pi / 180
-        joint_values[5] = 0
+        joint_values[4] = 0
+        joint_values[5] = 0        
         self.arm_group.go(joint_values, wait=True)
+        self.move_gripper(1)
         
     def get_cartesion_pose(self):
         '''
@@ -134,15 +141,15 @@ class RobotInitialization:
         '''
 
         # Gripper Pose
-        self.move_gripper(0.85)
+        # self.move_gripper(0.85)
         # Calibration pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
-        joint_values[0] = -30 * pi/180
-        joint_values[1] = -55 * pi / 180
-        joint_values[2] = 89 * pi / 180
-        joint_values[3] = 55 * pi / 180
-        joint_values[4] = -59 * pi / 180
-        joint_values[5] = -69 * pi / 180
+        joint_values[0] = -8 * pi/180
+        joint_values[1] = -75 * pi / 180
+        joint_values[2] = 74 * pi / 180
+        joint_values[3] = 83 * pi / 180
+        joint_values[4] = -67 * pi / 180
+        joint_values[5] = -83 * pi / 180
         self.arm_group.go(joint_values, wait=True)
         
     def move(self, target):
@@ -150,16 +157,34 @@ class RobotInitialization:
         # return True
         try:
             self.arm_group.set_joint_value_target(target, True)
-            self.move_gripper(1)
             plan_tuple: PlanTuple = self.arm_group.plan()
             plan = self.unpack_plan(plan_tuple)
-            input("Plan to move")
-
-            
+            input("Press to proceed")
             attempted = self.arm_group.execute(plan, wait=True)
-            
+            self.move_gripper(1)
         except:
             attempted = False
             
             
         return attempted
+    
+    
+    def unpack_plan(self, plan_tuple: PlanTuple) -> Union[RobotTrajectory, None]:
+        """Function used to unpack the tuple returned when planning with move_group.
+        This seems to be different than is was in ros melodic, so this function
+        is needed to adapt the old code to the changes.
+
+        Args:
+            plan_tuple: A plan tuple containing the plan and other success data.
+
+        Returns:
+            If the planning was successful, a trajectory that can be directly used for
+            visualization and motion. If unsuccessful, None is returned.
+        """
+
+        # plan_tuple[0] is the success boolean flag
+        if plan_tuple[0]:
+            return plan_tuple[1]  # The RobotTrajectory
+        else:
+            # If needed, the exact error code can be parsed from plan_tuple[3]
+            return None

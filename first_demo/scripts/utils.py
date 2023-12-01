@@ -8,8 +8,11 @@ from scipy.spatial.transform import Rotation as R
 from ros_numpy import numpify
 import yaml
 import os
-
+from tf import TransformListener
 from pydantic import BaseModel, Field
+from tf2_geometry_msgs import PoseStamped
+
+
 
 # Get loc of package on computer
 ROOT_PATH = os.path.dirname(__file__)
@@ -44,7 +47,51 @@ def load_joint_trajectory(path: str) -> List[Dict[str, List[float]]]:
     return joint_dicts
 
 
+def init_tf_tree() -> TransformListener:
+    """Launch the tf2 transform tree to ensure transforms are available for use"""
+    tf_listener = TransformListener()
 
+    transforms_available = False
+    while not transforms_available:
+        try:
+            tf_listener.waitForTransform(
+                "/base_link", "/base_link", rospy.Time(), rospy.Duration(0.1)
+            )
+            transforms_available = True
+        except (
+            tf2_ros.LookupException,
+            tf2_ros.ConnectivityException,
+            tf2_ros.ExtrapolationException,
+        ):
+            rospy.loginfo("Waiting for tf tree")
+
+    return tf_listener
+
+def transform_pose(input_pose, from_frame, to_frame):
+    # Initialize a tf2 Buffer and TransformListener
+    buffer = tf2_ros.Buffer()
+    listener = tf2_ros.TransformListener(buffer)
+
+    # Wait for the transformation to become available
+    rospy.sleep(1.0)
+
+    # Create a PoseStamped message from the input pose
+    pose_stamped = PoseStamped()
+    pose_stamped.header.frame_id = from_frame
+    pose_stamped.pose = input_pose
+
+    try:
+        # Use the TransformListener to transform the pose to the target frame
+        transformed_pose_stamped = buffer.transform(pose_stamped, to_frame)
+
+        # Extract the transformed pose
+        transformed_pose = transformed_pose_stamped.pose
+
+        return transformed_pose
+
+    except tf2_ros.TransformException as e:
+        rospy.logwarn("Transform failed: {}".format(e))
+        return None
 
 
 class TFFixer:
