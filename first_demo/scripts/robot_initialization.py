@@ -8,6 +8,9 @@ import moveit_msgs.msg
 import geometry_msgs.msg
 from math import pi
 from moveit_msgs.msg import DisplayTrajectory, MoveItErrorCodes, RobotTrajectory
+from geometry_msgs.msg import Pose, Point,Quaternion, PoseStamped
+from std_msgs.msg import Header
+# from tf2_geometry_msgs import PoseStamped
 PlanTuple = Tuple[bool, RobotTrajectory, float, MoveItErrorCodes]
 
 class RobotInitialization:
@@ -188,3 +191,24 @@ class RobotInitialization:
         else:
             # If needed, the exact error code can be parsed from plan_tuple[3]
             return None
+    
+    
+    def check_poses(self):
+        pos = Point
+        pos.x = 0.5
+        pos.y = 0.2
+        pos.z = 0.1
+        grasp_pose = Pose(
+            position=pos,
+            orientation=Quaternion(x=-0.5, y=0.5,  z=-0.5, w=0.5),
+        )
+        target = PoseStamped(
+                    pose=grasp_pose, header=Header(frame_id="base_link")
+        )
+        
+        self.arm_group.set_joint_value_target(target, True)
+        plan_tuple: PlanTuple = self.arm_group.plan()
+        plan = self.unpack_plan(plan_tuple)
+        input("Press to proceed")
+        attempted = self.arm_group.execute(plan, wait=True)
+        # self.move_gripper(1)

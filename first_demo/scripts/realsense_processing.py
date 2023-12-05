@@ -9,7 +9,7 @@ from laser_assembler.srv import (
 from rospy.timer import TimerEvent
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Bool
-# from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 
 # from box_grasping.utils.tf_helper import init_tf_tree
 from first_demo.srv import PCLFwdStatus, PCLFwdStatusRequest, PCLFwdStatusResponse
@@ -20,6 +20,8 @@ class RealSenseProcessor:
     def __init__(self) -> None:
         rospy.init_node("realsense_processing", anonymous=True)
 
+        self.fwd_pcd_with_timer = rospy.get_param("/realsense_processing/fwd_pcd_with_timer")
+        
         rospy.wait_for_service("assemble_scans2")
 
         self.assemble_pcds = rospy.ServiceProxy("assemble_scans2", AssembleScans2)
@@ -40,6 +42,9 @@ class RealSenseProcessor:
         self.tl = tf2_ros.TransformListener(self.tf_buffer)
 
         
+        self.pcd_forward_pub = rospy.Publisher("/pcl_stitcher_input_raw", PointCloud2, queue_size=1)
+        
+        
         # Getting the most recent point cloud data which is transformed into the robot base already
         # And store it into the self.pcl_latest
         self.pcl_latest = None
@@ -53,9 +58,20 @@ class RealSenseProcessor:
 
         # Actual forwarder
         # Publish the assembled point cloud data and nodelet is suppoed to process this in the launch file
-        self.pcd_forward_pub = rospy.Publisher("/pcl_stitcher_input_raw", PointCloud2, queue_size=1)
-        fwder = rospy.Timer(rospy.Duration(secs=2, nsecs=0), self.fwd_latest_pcd_callback)
+        fwder = rospy.Timer(rospy.Duration(secs=2, nsecs=0), self.fwd_latest_pcd_timer_callback)
 
+        # if self.fwd_pcd_with_timer:
+        #     # Actual forwarder
+        #     fwder = rospy.Timer(rospy.Duration(secs=2, nsecs=0), self.fwd_latest_pcd_timer_callback)
+        # else:
+        #     stitch_append_srv = rospy.Service(
+        #         "/realsense_processing/add_pcd_to_assembler", Trigger, self.fwd_latest_pcd_srv_callback
+        #     )
+
+        
+        
+        
+        
         rospy.spin()
 
 
@@ -101,6 +117,7 @@ class RealSenseProcessor:
                 data.header.stamp, 
                 rospy.Duration(0.1)
             )
+            # rospy.logwarn(f'Transform from "base_link to {data.header.frame_id} found! And the stamp is: {data.header.stamp}"')
         except:
             # TODO: this seems to always occur once, why?
             #   Shouldn't be a major issue but is annoying nonetheless
@@ -109,16 +126,30 @@ class RealSenseProcessor:
             return
 
         self.pcl_latest = data
+        
 
 
 
-    def fwd_latest_pcd_callback(self, event: TimerEvent):
+        
+    
+    
+    def fwd_latest_pcd_timer_callback(self, event: TimerEvent):
         """
         Publishes the latest stored recently pcl
         """
-        if rospy.get_param("/realsense_processing/pcl_fwd_status"):
-            self.pcd_forward_pub.publish(self.pcl_latest)
+        # if rospy.get_param("/realsense_processing/pcl_fwd_status"):
+        self.pcd_forward_pub.publish(self.pcl_latest)
 
+    # def fwd_latest_pcd_srv_callback(self, req: TriggerRequest):
+    #     if rospy.get_param("/realsense_processing/pcl_fwd_status"):
+    #         self.pcd_forward_pub.publish(self.pcl_latest)
+    #         return TriggerResponse(success=True)
+    #     else:
+    #         rospy.loginfo(
+    #             "Pcd forwarding is not active, set '/realsense_processing/"
+    #             "pcl_fwd_status' to 'True' to enable!"
+    #         )
+    #         return TriggerResponse(success=False)
 
 
 if __name__ == "__main__":

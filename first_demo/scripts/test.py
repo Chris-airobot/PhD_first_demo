@@ -26,7 +26,8 @@ def main():
     rospy.init_node("first_test")
     
     robot = RobotInitialization()
-    robot.camera_calibration_pose()
+    # robot.camera_calibration_pose()
+    robot.check_poses()
     # robot.move_gripper(1)
     # print(f'Now for going to the Vertical Pose')
     # input()

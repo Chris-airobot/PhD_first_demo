@@ -11,8 +11,6 @@ from laser_assembler.srv import AssembleScans2, AssembleScans2Request
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Bool, Header
 from robot_initialization import RobotInitialization
-# from box_grasping.motion.ur3e_motion import MotionType, Ur3eMover
-# from box_grasping.utils.moveit_helper import load_joint_trajectory
 from utils import transform_pose
 from first_demo.srv import PCLFwdStatus, PCLFwdStatusRequest
 from pathlib import Path
@@ -90,11 +88,9 @@ class FirstDemo:
 
         stitch_response = self.stitch_pcds(AssembleScans2Request(begin=start_time, end=end_time))
         stitched_cloud: PointCloud2 = stitch_response.cloud
-        
         return stitched_cloud
 
     def save_grasps(self, data: GraspConfigList):
-        print(f'data is: {data}')
         self.grasp_list = data.grasps
         
     def vector3ToNumpy(self, vec: Vector3) -> np.ndarray:
@@ -173,7 +169,7 @@ class FirstDemo:
                 )
                 
                 
-                rospy.loginfo(f"Pose is: {grasp_pose_stamped}")
+                rospy.loginfo(f"Pose is: \n {grasp_pose_stamped}")
                 
                 # self.pose_pub.publish(grasp.approach)
                 grasp_move_done = self.robot.move(target=grasp_pose_stamped)
