@@ -4,7 +4,7 @@ import os
 os.environ["ROS_NAMESPACE"] = "/kinova_gen3_lite"
 from typing import List, Union
 import rospy
-from geometry_msgs.msg import Pose, PoseArray, Quaternion, Vector3
+from geometry_msgs.msg import Pose, PoseArray, Quaternion, Vector3, Point
 from gpd_ros.msg import GraspConfig, GraspConfigList
 from robot_initialization import RobotInitialization
 from laser_assembler.srv import AssembleScans2, AssembleScans2Request
@@ -133,11 +133,11 @@ class FirstDemo:
             for grasp in self.grasp_list:
                 rot = np.zeros((3, 3))
                 # grasp approach direction
-                rot[:, 0] = self.vector3ToNumpy(grasp.approach)
+                rot[:, 2] = self.vector3ToNumpy(grasp.approach)
                 # hand closing direction
-                rot[:, 1] = self.vector3ToNumpy(grasp.binormal)
+                rot[:, 0] = self.vector3ToNumpy(grasp.binormal)
                 # hand axis
-                rot[:, 2] = self.vector3ToNumpy(grasp.axis)
+                rot[:, 1] = self.vector3ToNumpy(grasp.axis)
                 
                 # Rot shape:
                 # [approach.x  binormal.x  axis.x
@@ -150,15 +150,20 @@ class FirstDemo:
                 
                 quat = pyquaternion.Quaternion(matrix=rot)
                 pos = grasp.position
-
+                # PointCloud offset position
+                pos.z-=0.03
+                
                 grasp_pose = Pose(
                     position=pos,
                     orientation=Quaternion(x=quat[1], y=quat[2], z=quat[3], w=quat[0]),
                 )
+
                 # print(f'Before transformation: {grasp_pose}\n\n')
                 
-                # grasp_pose = transform_pose(grasp_pose, 'camera_link', 'base_link')
+                # grasp_pose = transform_pose(grasp_pose, 'base_link', 'fake_link')
                 # print(f'After transformation: {grasp_pose}')
+                
+                
                 
                 grasp_pose_stamped = PoseStamped(
                     pose=grasp_pose, header=Header(frame_id="base_link")

@@ -8,7 +8,7 @@ import moveit_msgs.msg
 import geometry_msgs.msg
 from math import pi
 from moveit_msgs.msg import DisplayTrajectory, MoveItErrorCodes, RobotTrajectory
-from geometry_msgs.msg import Pose, Point,Quaternion, PoseStamped
+from geometry_msgs.msg import Pose, Point,Quaternion, PoseStamped, PoseArray
 from std_msgs.msg import Header
 # from tf2_geometry_msgs import PoseStamped
 PlanTuple = Tuple[bool, RobotTrajectory, float, MoveItErrorCodes]
@@ -89,18 +89,18 @@ class RobotInitialization:
         '''
         # home pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
-        # joint_values[0] = 0
-        # joint_values[1] = -16 * pi / 180
-        # joint_values[2] = 75 * pi / 180
-        # joint_values[3] = 0
-        # joint_values[4] = -60 * pi / 180
-        # joint_values[5] = 0
         joint_values[0] = 0
-        joint_values[1] = 0
-        joint_values[2] = 0
+        joint_values[1] = -16 * pi / 180
+        joint_values[2] = 75 * pi / 180
         joint_values[3] = 0
-        joint_values[4] = 0
-        joint_values[5] = 0        
+        joint_values[4] = 0 * pi / 180
+        joint_values[5] = 0
+        # joint_values[0] = 0
+        # joint_values[1] = 0
+        # joint_values[2] = 0
+        # joint_values[3] = 0
+        # joint_values[4] = 0
+        # joint_values[5] = 0        
         self.arm_group.go(joint_values, wait=True)
         self.move_gripper(1)
         
@@ -147,11 +147,11 @@ class RobotInitialization:
         # self.move_gripper(0.85)
         # Calibration pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
-        joint_values[0] = -8 * pi/180
-        joint_values[1] = -75 * pi / 180
-        joint_values[2] = 74 * pi / 180
-        joint_values[3] = 83 * pi / 180
-        joint_values[4] = -67 * pi / 180
+        joint_values[0] = -5 * pi/180
+        joint_values[1] = -80 * pi / 180
+        joint_values[2] = 58 * pi / 180
+        joint_values[3] = 85 * pi / 180
+        joint_values[4] = -56 * pi / 180
         joint_values[5] = -83 * pi / 180
         self.arm_group.go(joint_values, wait=True)
         
@@ -193,22 +193,11 @@ class RobotInitialization:
             return None
     
     
-    def check_poses(self):
-        pos = Point
-        pos.x = 0.5
-        pos.y = 0.2
-        pos.z = 0.1
-        grasp_pose = Pose(
-            position=pos,
-            orientation=Quaternion(x=-0.5, y=0.5,  z=-0.5, w=0.5),
-        )
-        target = PoseStamped(
-                    pose=grasp_pose, header=Header(frame_id="base_link")
-        )
+
+    
+                
+
+                
         
-        self.arm_group.set_joint_value_target(target, True)
-        plan_tuple: PlanTuple = self.arm_group.plan()
-        plan = self.unpack_plan(plan_tuple)
-        input("Press to proceed")
-        attempted = self.arm_group.execute(plan, wait=True)
+  
         # self.move_gripper(1)

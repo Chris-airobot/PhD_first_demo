@@ -5,16 +5,14 @@ parameters:
   move_group_namespace: /kinova_gen3_lite
   namespace: /kinova_gen3_lite_eye_on_base/
   robot_base_frame: base_link
-  robot_effector_frame: tool_frame
+  robot_effector_frame: end_effector_link
   tracking_base_frame: camera_link
-  tracking_marker_frame: aruco_marker_frame
+  tracking_marker_frame: camera_marker
 transformation:
-  qw: -5.40285168e-02  
-  qx:  -3.75314869e-02                                     
-  qy: 2.32089921e-04
-  qz:  9.97833780e-01
-  x: 1.1485363404237483
-  y: 0.009071432498892168
-  z: 0.26145678377949916
-
-# turned axis
+  qw: 0.04028590405486268
+  qx: 0.38843586644077854
+  qy: 0.017529283917433247
+  qz: -0.9204278069475227
+  x: 1.1331379840966813
+  y: -0.037672821171242044
+  z: 0.4793054730971652

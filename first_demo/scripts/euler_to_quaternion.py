@@ -11,10 +11,10 @@ from math import pi
 '''
 
 
-qw = 0.45325293325278926
-qx= -0.4905523301944451
-qy= -0.507049360131059
-qz= 0.5448129369143379
+qw = 1
+qx= 0
+qy= 0
+qz= 0
 # def get_rotation (msg):
 #     global roll, pitch, yaw
 #     orientation_q = msg.pose.pose.orientation
@@ -22,25 +22,25 @@ qz= 0.5448129369143379
 #     (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
 
 rospy.init_node('my_quaternion_to_euler')
-# pose = Pose()
-# pose.orientation.x = qx
-# pose.orientation.y = qy
-# pose.orientation.z = qz
-# pose.orientation.w = qw
+pose = Pose()
+pose.orientation.x = qx
+pose.orientation.y = qy
+pose.orientation.z = qz
+pose.orientation.w = qw
 
 
-# quaternion = (
-#     pose.orientation.x,
-#     pose.orientation.y,
-#     pose.orientation.z,
-#     pose.orientation.w)
+quaternion = (
+    pose.orientation.x,
+    pose.orientation.y,
+    pose.orientation.z,
+    pose.orientation.w)
 
-# angles = euler_from_quaternion(quaternion)
+angles = euler_from_quaternion(quaternion)
 
-# roll, pitch, yaw = angles[0], angles[1], angles[2]
-yaw = -1.5707963267948966
-pitch = 0
-roll = -1.5707963267948966  # red axis stay the same, beside the two, the first one
+roll, pitch, yaw = angles[0], angles[1], angles[2]
+yaw += pi
+# pitch = 0
+# roll += pi  # red axis stay the same, beside the two, the first one
 quat = quaternion_from_euler (roll, pitch, yaw)
 print(f"quat is: {quat} in x, y, z, w")
 

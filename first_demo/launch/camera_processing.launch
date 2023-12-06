@@ -10,7 +10,8 @@
   <node pkg="tf2_ros" type="static_transform_publisher" name="camera_internal_frame_broadcaster_4"
       args="0.0 0.0 0.0   -0.5 0.5 -0.5 0.5 camera_depth_frame camera_depth_optical_frame" />
 
-
+  <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="fake_link_transform"
+      args="0.0 0.0 0.0   0.0 0.0 1.0 0.0 base_link fake_link" /> -->
 
 
 

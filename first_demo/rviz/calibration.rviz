@@ -307,7 +307,7 @@ Visualization Manager:
         dummy_link:
           Value: false
         end_effector_link:
-          Value: true
+          Value: false
         forearm_link:
           Value: false
         gripper_base_link:
@@ -325,7 +325,7 @@ Visualization Manager:
         shoulder_link:
           Value: false
         tool_frame:
-          Value: false
+          Value: true
         upper_wrist_link:
           Value: false
       Marker Alpha: 1
@@ -452,9 +452,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.29479584097862244
+      Pitch: 0.7047956585884094
       Target Frame: <Fixed Frame>
-      Yaw: 5.381237506866455
+      Yaw: 5.4762420654296875
     Saved: ~
 Window Geometry:
   Displays:

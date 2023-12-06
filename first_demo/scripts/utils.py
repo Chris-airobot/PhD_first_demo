@@ -3,16 +3,16 @@ from typing import Dict, List
 import pandas as pd
 import rospy
 import tf2_ros
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import TransformStamped, Point, Quaternion, Pose
 from scipy.spatial.transform import Rotation as R
 from ros_numpy import numpify
 import yaml
 import os
-from tf import TransformListener
+from tf import TransformListener, transformations
 from pydantic import BaseModel, Field
 from tf2_geometry_msgs import PoseStamped
-
-
+import tf
+import math
 
 # Get loc of package on computer
 ROOT_PATH = os.path.dirname(__file__)
@@ -93,6 +93,40 @@ def transform_pose(input_pose, from_frame, to_frame):
         rospy.logwarn("Transform failed: {}".format(e))
         return None
 
+
+
+
+
+def pose_reframe(original_pose: PoseStamped, angle_degrees):
+    # Convert angle from degrees to radians
+    angle_radians = math.radians(angle_degrees)
+    
+    original_euler = transformations.euler_from_quaternion((original_pose.pose.orientation.x,
+                                                            original_pose.pose.orientation.y,
+                                                            original_pose.pose.orientation.z,
+                                                            original_pose.pose.orientation.w))
+    
+    roll, pitch, yaw = original_euler[0], original_euler[1], original_euler[2]
+    
+    yaw += angle_radians
+    
+    # Create a quaternion representing the rotation
+    quaternion = transformations.quaternion_from_euler(roll, pitch, yaw)
+
+    # Create a Transform object
+    transform = tf.TransformerROS()
+    transform.setTransform(original_pose.header.frame_id, 
+                           "transformed_frame", 
+                           rospy.Time.now(), 
+                           original_pose.header.stamp, 
+                           original_pose.header.frame_id, 
+                           Point(original_pose.pose.position.x, original_pose.pose.position.y, original_pose.pose.position.z), 
+                           quaternion)
+
+    # Transform the original pose
+    transformed_pose = transform.transformPose("transformed_frame", original_pose)
+
+    return transformed_pose
 
 class TFFixer:
     def __init__(self):

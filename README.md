@@ -35,3 +35,8 @@ Necessary modification for the Packages:
 - Also checked the "gpd" package in low-level, and realize the grasp pose published is in "base_link" frame  
 - Switching from "tool_frame" to "end_effector_link" fixes the problem of the axis of ArUco makrer goes up
 - Still unclear about the reason why the pose is not correct
+
+
+## Dec 6:
+- Finally fixed the problem of wrong graps pose, it is actually due to the different settings bettwen the kinova_gen3_lite robot's end effector's frame axis and the UR series robot's end effector's frame axis 
+- Changed the Grasp Pose transformation
