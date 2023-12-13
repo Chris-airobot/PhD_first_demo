@@ -40,3 +40,8 @@ Necessary modification for the Packages:
 ## Dec 6:
 - Finally fixed the problem of wrong graps pose, it is actually due to the different settings bettwen the kinova_gen3_lite robot's end effector's frame axis and the UR series robot's end effector's frame axis 
 - Changed the Grasp Pose transformation
+
+
+## Dec 13:
+- Changes the structure of the code, also looks at the low-level control of the robot 
+- Next step is thinking about controlling the speed and how to rule of the box so that GPD does not consider the box as the object to grasp

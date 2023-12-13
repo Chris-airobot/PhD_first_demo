@@ -13,7 +13,7 @@ from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 
 # from box_grasping.utils.tf_helper import init_tf_tree
 from first_demo.srv import PCLFwdStatus, PCLFwdStatusRequest, PCLFwdStatusResponse
-from utils import init_tf_tree
+from util.utils import init_tf_tree
 
 class RealSenseProcessor:
     # Class that provides services to easily interface with an attached RealSense camera

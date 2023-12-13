@@ -89,12 +89,12 @@ class RobotInitialization:
         '''
         # home pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
-        joint_values[0] = 0
-        joint_values[1] = -16 * pi / 180
-        joint_values[2] = 75 * pi / 180
-        joint_values[3] = 0
-        joint_values[4] = 0 * pi / 180
-        joint_values[5] = 0
+        joint_values[0] = -19 * pi / 180
+        joint_values[1] = 0
+        joint_values[2] = 106 * pi / 180
+        joint_values[3] = 90 * pi / 180
+        joint_values[4] = 65 * pi / 180
+        joint_values[5] = 76 * pi / 180
         # joint_values[0] = 0
         # joint_values[1] = 0
         # joint_values[2] = 0
@@ -102,7 +102,7 @@ class RobotInitialization:
         # joint_values[4] = 0
         # joint_values[5] = 0        
         self.arm_group.go(joint_values, wait=True)
-        self.move_gripper(1)
+        # self.move_gripper(1)
         
     def get_cartesion_pose(self):
         '''
@@ -147,12 +147,12 @@ class RobotInitialization:
         # self.move_gripper(0.85)
         # Calibration pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
-        joint_values[0] = -5 * pi/180
-        joint_values[1] = -80 * pi / 180
-        joint_values[2] = 58 * pi / 180
-        joint_values[3] = 85 * pi / 180
-        joint_values[4] = -56 * pi / 180
-        joint_values[5] = -83 * pi / 180
+        joint_values[0] = -6 * pi/180
+        joint_values[1] = -68 * pi / 180
+        joint_values[2] = 87 * pi / 180
+        joint_values[3] = 84 * pi / 180
+        joint_values[4] = -72 * pi / 180
+        joint_values[5] = -84 * pi / 180
         self.arm_group.go(joint_values, wait=True)
         
     def move(self, target):

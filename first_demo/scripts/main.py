@@ -11,7 +11,7 @@ from laser_assembler.srv import AssembleScans2, AssembleScans2Request
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Bool, Header
 from robot_initialization import RobotInitialization
-from utils import transform_pose
+# from util.utils import transform_pose
 from first_demo.srv import PCLFwdStatus, PCLFwdStatusRequest
 from pathlib import Path
 import numpy as np
@@ -151,7 +151,6 @@ class FirstDemo:
                 quat = pyquaternion.Quaternion(matrix=rot)
                 pos = grasp.position
                 # PointCloud offset position
-                pos.z-=0.03
                 
                 grasp_pose = Pose(
                     position=pos,
@@ -187,9 +186,16 @@ class FirstDemo:
             if not grasp_performed:
                 rospy.logwarn("No valid grasps planned to, restarting!!")
                 continue
-
+            
+            # Grasped the object
             self.robot.move_gripper(0.1)
             self.robot.init_pose()
+            self.robot.move_gripper(1)
+            
+            
+            
+            
+            
             rospy.sleep(0.1)
 
 
