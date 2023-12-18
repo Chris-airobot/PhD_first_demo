@@ -8,43 +8,49 @@ from scipy.spatial.transform import Rotation as R
 from ros_numpy import numpify
 import yaml
 import os
-from tf import TransformListener, transformations
+from tf import TransformListener
 from pydantic import BaseModel, Field
 from tf2_geometry_msgs import PoseStamped
-import tf
-import math
+import numpy as np
+from tf.transformations import euler_from_quaternion
 
 # Get loc of package on computer
 ROOT_PATH = os.path.dirname(__file__)
 
+def pose_difference(p_current, p_desired):
+    """Inputs are supposed to be in a list of 7 elements, first 3 
+    are translational elements, last 4 are quaternion elements
 
-class TrajectoryModel(BaseModel):
-    scene_scan: str
-    single_view: str
+    Args:
+        p_current: current pose of the end_effector
+        p_desired: desired pose of the end_effector
+    """
+    
+    delta_translation = p_desired[:3] - p_current[:3]
+    
+    # Rotation Difference calculation
+    x1, y1, z1, w1 = p_current[3:]
+    x2, y2, z2, w2 = p_desired[3:]
+    
+    x2 *= -1
+    y2 *= -1
+    z2 *= -1
+    
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    y = w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2
+    z = w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2
+    
+    
 
+    delta_angles = euler_from_quaternion([x,y,z,w])
+    rotation_angles = [0, 0, 0]
+    
+    for i in [0,1,2]:
+        rotation_angles[i] = delta_angles[i]*180/np.pi
 
-class PathModel(BaseModel):
-    # Statically add the root location to the pydantic model
-    root: str = Field(ROOT_PATH, const=True)
-    key_locs: str
-    trajectories: TrajectoryModel
+    return np.concatenate((delta_translation, rotation_angles), axis= None)
 
-
-class Config(BaseModel):
-    paths: PathModel
-
-
-
-def load_yaml(path):
-    with open(path, "r") as f:
-        output = yaml.safe_load(f)
-    return output
-
-
-def load_joint_trajectory(path: str) -> List[Dict[str, List[float]]]:
-    df = pd.read_csv(path)
-    joint_dicts = [{col: row[col] for col in df.columns} for _, row in df.iterrows()]
-    return joint_dicts
 
 
 def init_tf_tree() -> TransformListener:
@@ -97,36 +103,36 @@ def transform_pose(input_pose, from_frame, to_frame):
 
 
 
-def pose_reframe(original_pose: PoseStamped, angle_degrees):
-    # Convert angle from degrees to radians
-    angle_radians = math.radians(angle_degrees)
+# def pose_reframe(original_pose: PoseStamped, angle_degrees):
+#     # Convert angle from degrees to radians
+#     angle_radians = math.radians(angle_degrees)
     
-    original_euler = transformations.euler_from_quaternion((original_pose.pose.orientation.x,
-                                                            original_pose.pose.orientation.y,
-                                                            original_pose.pose.orientation.z,
-                                                            original_pose.pose.orientation.w))
+#     original_euler = transformations.euler_from_quaternion((original_pose.pose.orientation.x,
+#                                                             original_pose.pose.orientation.y,
+#                                                             original_pose.pose.orientation.z,
+#                                                             original_pose.pose.orientation.w))
     
-    roll, pitch, yaw = original_euler[0], original_euler[1], original_euler[2]
+#     roll, pitch, yaw = original_euler[0], original_euler[1], original_euler[2]
     
-    yaw += angle_radians
+#     yaw += angle_radians
     
-    # Create a quaternion representing the rotation
-    quaternion = transformations.quaternion_from_euler(roll, pitch, yaw)
+#     # Create a quaternion representing the rotation
+#     quaternion = transformations.quaternion_from_euler(roll, pitch, yaw)
 
-    # Create a Transform object
-    transform = tf.TransformerROS()
-    transform.setTransform(original_pose.header.frame_id, 
-                           "transformed_frame", 
-                           rospy.Time.now(), 
-                           original_pose.header.stamp, 
-                           original_pose.header.frame_id, 
-                           Point(original_pose.pose.position.x, original_pose.pose.position.y, original_pose.pose.position.z), 
-                           quaternion)
+#     # Create a Transform object
+#     transform = tf.TransformerROS()
+#     transform.setTransform(original_pose.header.frame_id, 
+#                            "transformed_frame", 
+#                            rospy.Time.now(), 
+#                            original_pose.header.stamp, 
+#                            original_pose.header.frame_id, 
+#                            Point(original_pose.pose.position.x, original_pose.pose.position.y, original_pose.pose.position.z), 
+#                            quaternion)
 
-    # Transform the original pose
-    transformed_pose = transform.transformPose("transformed_frame", original_pose)
+#     # Transform the original pose
+#     transformed_pose = transform.transformPose("transformed_frame", original_pose)
 
-    return transformed_pose
+#     return transformed_pose
 
 class TFFixer:
     def __init__(self):

@@ -11,10 +11,10 @@ from math import pi
 '''
 
 
-qw = 1
-qx= 0
-qy= 0
-qz= 0
+qx = -0.673
+qy = 0.735
+qz = -0.068
+qw = 0.036
 # def get_rotation (msg):
 #     global roll, pitch, yaw
 #     orientation_q = msg.pose.pose.orientation
@@ -38,7 +38,7 @@ quaternion = (
 angles = euler_from_quaternion(quaternion)
 
 roll, pitch, yaw = angles[0], angles[1], angles[2]
-yaw += pi
+print(f'Roll is:{roll}, Pitch is: {pitch}, Yaw is:{yaw}')
 # pitch = 0
 # roll += pi  # red axis stay the same, beside the two, the first one
 quat = quaternion_from_euler (roll, pitch, yaw)
