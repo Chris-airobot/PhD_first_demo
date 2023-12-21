@@ -56,3 +56,7 @@ Necessary modification for the Packages:
 ## Dec 18:
 - Now the robot can move with the low-level method, also the resolved-rate-control method logic has been implemented, but it has error
 - Next step is fixing that error and making sure to implement the rest of functions similar to Moveit! but in low-level.
+
+
+## Dec 20:
+- A pile of objects, robot takes actions to have a better exploration feedback

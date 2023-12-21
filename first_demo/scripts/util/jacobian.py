@@ -25,22 +25,27 @@ def calculate_jacobian(joint_angles):
     J = np.zeros((6, 6))
 
     # Initialize the transformation matrix
-    T = np.identity(4)
+    T = np.eye(4)
+    z = [np.array([0, 0, 1])]
+    p = [np.zeros(3)]
 
     for i in range(6):
         # Calculate the relative transformation between joint i and end-effector
-        T_i = calculate_transform(*dh_params[i])
-        relative_transform = np.linalg.inv(T_i) @ T
-
-        # Update the overall transformation matrix
+        T_i = calculate_transform(*dh_params[i])        
         T = T @ T_i
 
-        # Extract the rotational and translational components from the relative transformation
-        R = relative_transform[:3, :3]
-        p = relative_transform[:3, 3]
 
-        # Fill in the Jacobian matrix
-        J[:3, i] = np.cross(R[:, 2], p)
-        J[3:, i] = R[:, 2]
+        # Extract the rotational and translational components from the relative transformation
+        z.append(T[:3, 2])
+        p.append(T[:3, 3])
+
+    # End-effector position
+    p_end = p[-1]
+    
+    # Compute Jacobian columns
+    for i in range(6):
+        J[:3, i] = np.cross(z[i], p_end - p[i])
+        J[3:, i] = z[i]
+
 
     return J

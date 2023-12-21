@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 from tf2_geometry_msgs import PoseStamped
 import numpy as np
 from tf.transformations import euler_from_quaternion
+from scipy.spatial.transform import Rotation as R
 
 # Get loc of package on computer
 ROOT_PATH = os.path.dirname(__file__)
@@ -26,30 +27,24 @@ def pose_difference(p_current, p_desired):
         p_desired: desired pose of the end_effector
     """
     
-    delta_translation = p_desired[:3] - p_current[:3]
+    delta_translation = np.array(p_desired[:3]) - np.array(p_current[:3])
     
     # Rotation Difference calculation
-    x1, y1, z1, w1 = p_current[3:]
-    x2, y2, z2, w2 = p_desired[3:]
-    
-    x2 *= -1
-    y2 *= -1
-    z2 *= -1
-    
-    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
-    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
-    y = w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2
-    z = w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2
+    current_rotation = R.from_euler('xyz', p_current[3:]).as_quat()
+    desired_rotation = R.from_euler('xyz', p_desired[3:]).as_quat()
     
     
+    delta_rotation = R.from_quat(desired_rotation) * R.from_quat(current_rotation).inv()
+    delta_rotation= delta_rotation.as_euler('xyz')
+    
+    
+    # delta_angles = euler_from_quaternion(delta_rotation_quat)
+    # rotation_angles = [0, 0, 0]
+    
+    # for i in [0,1,2]:
+    #     rotation_angles[i] = delta_angles[i]*180/np.pi
 
-    delta_angles = euler_from_quaternion([x,y,z,w])
-    rotation_angles = [0, 0, 0]
-    
-    for i in [0,1,2]:
-        rotation_angles[i] = delta_angles[i]*180/np.pi
-
-    return np.concatenate((delta_translation, rotation_angles), axis= None)
+    return np.concatenate((delta_translation, delta_rotation), axis= None)
 
 
 

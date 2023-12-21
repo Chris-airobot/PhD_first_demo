@@ -13,7 +13,7 @@ from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 
 # from box_grasping.utils.tf_helper import init_tf_tree
 from first_demo.srv import PCLFwdStatus, PCLFwdStatusRequest, PCLFwdStatusResponse
-from util.utils import init_tf_tree
+# from util.utils import init_tf_tree
 
 class RealSenseProcessor:
     # Class that provides services to easily interface with an attached RealSense camera
@@ -36,7 +36,7 @@ class RealSenseProcessor:
             "/realsense_processing/stitch_pcd_service", AssembleScans2, self.stitch_pcds_callback
         )
 
-        self.tf_listener = init_tf_tree()
+        # self.tf_listener = init_tf_tree()
 
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(30))
         self.tl = tf2_ros.TransformListener(self.tf_buffer)

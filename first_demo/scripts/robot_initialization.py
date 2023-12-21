@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import os
 os.environ["ROS_NAMESPACE"] = "/kinova_gen3_lite"
 import sys
@@ -38,7 +39,7 @@ class RobotInitialization:
                                                     moveit_msgs.msg.DisplayTrajectory,
                                                     queue_size=20)
         
-        self.init_scene()
+        # self.init_scene()
         # self.init_pose()
         
         
@@ -89,12 +90,12 @@ class RobotInitialization:
         '''
         # home pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
-        joint_values[0] = -19 * pi / 180
-        joint_values[1] = 0
-        joint_values[2] = 106 * pi / 180
-        joint_values[3] = 90 * pi / 180
-        joint_values[4] = 65 * pi / 180
-        joint_values[5] = 76 * pi / 180
+        joint_values[0] = -48 * pi / 180
+        joint_values[1] = 38 * pi / 180
+        joint_values[2] = 137 * pi / 180
+        joint_values[3] = 94 * pi / 180
+        joint_values[4] = 74 * pi / 180
+        joint_values[5] = 39 * pi / 180
         # joint_values[0] = 0
         # joint_values[1] = 0
         # joint_values[2] = 0
@@ -147,11 +148,11 @@ class RobotInitialization:
         # self.move_gripper(0.85)
         # Calibration pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
-        joint_values[0] = -6 * pi/180
-        joint_values[1] = -68 * pi / 180
-        joint_values[2] = 87 * pi / 180
-        joint_values[3] = 84 * pi / 180
-        joint_values[4] = -72 * pi / 180
+        joint_values[0] = 25 * pi/180
+        joint_values[1] = -110 * pi / 180
+        joint_values[2] = -112 * pi / 180
+        joint_values[3] = -36 * pi / 180
+        joint_values[4] = 66 * pi / 180
         joint_values[5] = -84 * pi / 180
         self.arm_group.go(joint_values, wait=True)
         
@@ -196,8 +197,16 @@ class RobotInitialization:
 
     
                 
-
+    
                 
         
   
         # self.move_gripper(1)
+
+
+if __name__ == "__main__":
+    rospy.init_node("test")
+    robot = RobotInitialization()
+    robot.camera_calibration_pose()
+    
+    # rospy.logwarn(robot.arm_group.get_jacobian_matrix(robot.get_arm_joint_values()))

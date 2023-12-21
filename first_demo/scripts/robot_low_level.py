@@ -8,8 +8,10 @@ from sensor_msgs.msg import JointState
 
 from kortex_driver.srv import *
 from kortex_driver.msg import *
+from tf.transformations import euler_from_quaternion
 from util.jacobian import calculate_jacobian
 from util.utils import pose_difference
+
 
 class RobotInitialization:
     def __init__(self):
@@ -77,27 +79,24 @@ class RobotInitialization:
 
     def init_pose(self):
         joint_values = [-19, 0, 106, 90, 65, 76]
+        # joint_values = [0, 0, 0, 0, 0, 0]
         
         self.send_joint_angles(joint_values)
 
     
     def get_current_pose(self):
-        listener = tf.TransformListener()
-        rospy.sleep(1.0)  # Allow time for the tf listener to start
-
+        
         try:
-            # Specify the source and target frames (adjust accordingly)
-            listener.waitForTransform("base_link", "tool_frame", rospy.Time(0), rospy.Duration(1.0))
-            
-            # Get the transformation between the frames
-            (trans, rot) = listener.lookupTransform("base_link", "tool_frame", rospy.Time(0))
-
-            # Combine translation and rotation into a 6D pose
-            # rot is in xyzw order
-            p_current = np.concatenate((np.array(trans), np.array(rot)))
+            feedback = rospy.wait_for_message("/" + self.robot_name + "/base_feedback", BaseCyclic_Feedback)
+            p_current = [feedback.base.commanded_tool_pose_x, 
+                         feedback.base.commanded_tool_pose_y,
+                         feedback.base.commanded_tool_pose_z,
+                         feedback.base.commanded_tool_pose_theta_x * np.pi/180,
+                         feedback.base.commanded_tool_pose_theta_y * np.pi/180,
+                         feedback.base.commanded_tool_pose_theta_z * np.pi/180]
             return p_current
 
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+        except:
             rospy.logerr("Failed to get end-effector pose.")
             return False
     
@@ -105,40 +104,38 @@ class RobotInitialization:
     def get_current_joints(self):
         joint_state_msg: JointState = rospy.wait_for_message('/kinova_gen3_lite/joint_states', JointState)
         joint_angles = joint_state_msg.position
-
+        
         return joint_angles[:6]
     
     def resolved_rate_control(self, desired_pose):
-        current_pose = self.get_current_pose()
-        delta_pose = pose_difference(current_pose, desired_pose)
-        print(f'delta_pose is:{delta_pose}')
-        J = calculate_jacobian(current_pose)
-        J_inv = np.linalg.inv(J)
         
-        ee_velocities = J_inv @ delta_pose
-        
+        # print(f'ee_velocities is:{ee_velocities}')
+        # quit()
         dt = 0.1
         
-        for _ in range(10):
+        for _ in range(100):
             
+            current_pose = self.get_current_pose()
+            delta_pose = pose_difference(current_pose, desired_pose)
             # Get current joints_value
             current_joint = self.get_current_joints()
-            print(f'current_joint is:{current_joint}')
-            # Work out the manipulator Jacobian using the current robot configuration
+            
+            
             J = calculate_jacobian(current_joint)
-
-
-            # Since the Panda has 7 joints, the Jacobian is not square, therefore we must
-            # use the pseudoinverse (the pinv method)
-            J_inv = np.linalg.inv(J)
-
+            J_inv = np.linalg.pinv(J)
+            # print(f'delta_pose is:{delta_pose}')
+            
+            # This one should return the desired velocities of end_effector in cartesian pose
+            ee_velocities = delta_pose * dt
+            
+            joint_increment = J_inv @ ee_velocities 
+            
+            # joint_increment = ee_velocities * dt
             # Calculate the required joint velocities and apply to the robot
-            joint_increment = J_inv @ ee_velocities * dt
-            print(f'joint_increment is :{joint_increment}')
+            
             # Step the simulator by dt seconds
             current_joint += joint_increment
-            
-            self.send_joint_angles(current_joint)  
+            self.send_joint_angles(np.rad2deg(current_joint))  
         
     
     
@@ -242,7 +239,7 @@ class RobotInitialization:
         rospy.sleep(0.25)
         return True
 
-    def example_send_cartesian_pose(self):
+    def send_cartesian_pose(self, pose):
         self.last_action_notif_type = None
         # Get the actual cartesian pose to increment it
         # You can create a subscriber to listen to the base_feedback
@@ -252,15 +249,23 @@ class RobotInitialization:
         # Possible to execute waypointList via execute_action service or use execute_waypoint_trajectory service directly
         req = ExecuteActionRequest()
         trajectory = WaypointList()
-
+        
+        
+        # If the pose comes in is in the format of quaternion 
+        if len(pose) != 6:
+            rot = [angle*180/np.pi for angle in euler_from_quaternion(pose[3:])]
+            pose = np.concatenate((pose[:3], rot)) 
+            
+            
+            
         trajectory.waypoints.append(
             self.FillCartesianWaypoint(
-                feedback.base.commanded_tool_pose_x,
-                feedback.base.commanded_tool_pose_y,
-                feedback.base.commanded_tool_pose_z + 0.10,
-                feedback.base.commanded_tool_pose_theta_x,
-                feedback.base.commanded_tool_pose_theta_y,
-                feedback.base.commanded_tool_pose_theta_z,
+                pose[0],
+                pose[1],
+                pose[2],
+                pose[3],
+                pose[4],
+                pose[5],
                 0)
         )
 
@@ -291,7 +296,6 @@ class RobotInitialization:
         # Angles to send the arm to vertical position (all zeros)
         for joint in joints:
             angularWaypoint.angles.append(joint)
-
         # Each AngularWaypoint needs a duration and the global duration (from WaypointList) is disregarded. 
         # If you put something too small (for either global duration or AngularWaypoint duration), the trajectory will be rejected.
         angular_duration = 0
@@ -403,15 +407,16 @@ class RobotInitialization:
         except:
             pass
         
-        
-        desired_pose = [ 0.43877447, 0.19352064, 0.44737592, -0.18998307, -0.68514529, -0.68088898, -0.17570588]
+        # 6D pose with degree angles xyz
+        desired_pose = [ 0.43877447, 0.19352064, 0.44737592, 1.583, -0.018, 2.618]
 
         
         self.example_clear_faults()
         self.example_subscribe_to_a_robot_notification()
         self.init_pose()
-        # current_pose = self.get_current_pose()
 
+        # # self.send_joint_angles()
+        # self.send_cartesian_pose(desired_pose)
         self.resolved_rate_control(desired_pose=desired_pose)
         quit()
         
