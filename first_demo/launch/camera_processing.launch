@@ -40,7 +40,7 @@
     <remap from="~output" to="/pcl_stitcher_input_processed" />
     <rosparam>
       keep_organized: False
-      input_frame: /camera_color_optical_frame
+      input_frame: /base_link
     </rosparam>
   </node>
 

@@ -8,6 +8,7 @@ Panels:
         - /MotionPlanning1/Planned Path1
         - /TF1
         - /TF1/Frames1
+        - /PoseArray1
       Splitter Ratio: 0.5
     Tree Height: 262
   - Class: rviz/Selection
@@ -191,7 +192,7 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-        Loop Animation: false
+        Loop Animation: true
         Robot Alpha: 0.5
         Robot Color: 150; 50; 150
         Show Robot Collision: true
@@ -214,7 +215,7 @@ Visualization Manager:
         Goal State Color: 250; 128; 0
         Interactive Marker Size: 0
         Joint Violation Color: 255; 0; 255
-        Planning Group: arm
+        Planning Group: gripper
         Query Goal State: true
         Query Start State: false
         Show Workspace: false
@@ -366,10 +367,10 @@ Visualization Manager:
         base_link:
           camera_link:
             camera_aligned_depth_to_color_frame:
+              {}
+            camera_color_frame:
               camera_color_optical_frame:
                 {}
-            camera_color_frame:
-              {}
             camera_depth_frame:
               camera_depth_optical_frame:
                 {}
@@ -390,6 +391,23 @@ Visualization Manager:
                         tool_frame:
                           {}
       Update Interval: 0
+      Value: true
+    - Alpha: 1
+      Arrow Length: 0.30000001192092896
+      Axes Length: 0.30000001192092896
+      Axes Radius: 0.009999999776482582
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.07000000029802322
+      Head Radius: 0.029999999329447746
+      Name: PoseArray
+      Queue Size: 10
+      Shaft Length: 0.23000000417232513
+      Shaft Radius: 0.009999999776482582
+      Shape: Axes
+      Topic: /pose_viz
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
@@ -419,7 +437,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.943387985229492
+      Distance: 2.0058364868164062
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -435,9 +453,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4403979480266571
+      Pitch: 0.3503979742527008
       Target Frame: <Fixed Frame>
-      Yaw: 5.59857702255249
+      Yaw: 5.593571186065674
     Saved: ~
 Window Geometry:
   Displays:

@@ -60,3 +60,6 @@ Necessary modification for the Packages:
 
 ## Dec 20:
 - A pile of objects, robot takes actions to have a better exploration feedback
+- Find a new place of the camera position
+- Use robotics-toolbox-python 
+- Read the paper about the idea above

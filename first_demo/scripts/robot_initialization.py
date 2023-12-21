@@ -39,7 +39,7 @@ class RobotInitialization:
                                                     moveit_msgs.msg.DisplayTrajectory,
                                                     queue_size=20)
         
-        # self.init_scene()
+        self.init_scene()
         # self.init_pose()
         
         
@@ -76,7 +76,7 @@ class RobotInitialization:
         table_pose.header.frame_id = "base_link"
         table_pose.pose.position.x = 0  
         table_pose.pose.position.y = 0  
-        table_pose.pose.position.z = -table_size[2]/2-0.040001 
+        table_pose.pose.position.z = -table_size[2]/2-0.050001 
         table_name = "table"
         self.scene.add_box(table_name, table_pose, size=table_size)
 

@@ -17,6 +17,11 @@ from pathlib import Path
 import numpy as np
 import pyquaternion
 from tf2_geometry_msgs import PoseStamped
+from scipy.linalg import lstsq
+from gpd_ros.msg import CloudIndexed
+from sensor_msgs.msg import PointCloud2
+from sensor_msgs import point_cloud2
+from std_msgs.msg import Header, Int64
 
 class FirstDemo:
     def __init__(self):
@@ -47,10 +52,14 @@ class FirstDemo:
         # )
         
         
-        # Publish the point cloud data into the "/cloud_to_get_grasps_on" topic
+        # Publish the point cloud data into topic that GPD package which receives the input
         self.get_grasps_pub = rospy.Publisher(
             "/cloud_to_get_grasps_on", PointCloud2, queue_size=1
         )
+
+
+        # self.get_grasps_pub_cloud_index = rospy.Publisher('/cloud_indexed', CloudIndexed, queue_size=1)
+
 
         self.grasp_list: Union[List[GraspConfig], None] = None
         
@@ -93,6 +102,40 @@ class FirstDemo:
     def save_grasps(self, data: GraspConfigList):
         self.grasp_list = data.grasps
         
+        
+    def point_cloud_processing(self, pcd):
+        cloud = []
+        
+        for p in point_cloud2.read_points(pcd):
+            cloud.append([p[0], p[1], p[2]])
+            
+        cloud = np.asarray(cloud)
+        A = np.c_[cloud[:,0], cloud[:,1], np.ones(cloud.shape[0])]
+        b = cloud[:,2]
+        C, _, _, _ = lstsq(A, b)
+        a, b, c, d = C[0], C[1], -1., C[2] # coefficients of the form: a*x + b*y + c*z + d = 0.
+        dist = ((a*cloud[:,0] + b*cloud[:,1] + d) - cloud[:,2])**2
+        err = dist.sum()
+        idx = np.where(dist > 0.01)
+        
+        msg = CloudIndexed()
+        header = Header()
+        header.frame_id = "/base_link"
+        header.stamp = rospy.Time.now()
+        msg.cloud_sources.cloud = point_cloud2.create_cloud_xyz32(header, cloud.tolist())
+        msg.cloud_sources.view_points.append(Point(0,0,0))
+        for i in range(cloud.shape[0]):
+            msg.cloud_sources.camera_source.append(Int64(0))
+        for i in idx[0]:
+            msg.indices.append(Int64(i))    
+        s = input('Hit [ENTER] to publish')
+        self.get_grasps_pub_cloud_index.publish(msg)
+        print(f'Published cloud with', len(msg.indices), 'indices')
+        rospy.sleep(2)
+  
+                
+        
+        
     def vector3ToNumpy(self, vec: Vector3) -> np.ndarray:
         return np.array([vec.x, vec.y, vec.z])        
         
@@ -109,7 +152,8 @@ class FirstDemo:
             
             # Get the point cloud data of the object
             pcd = self.scan_object()
-  
+
+            # self.point_cloud_processing(pcd)
             self.get_grasps_pub.publish(pcd)
             
             
@@ -177,7 +221,6 @@ class FirstDemo:
                 
                 # self.pose_pub.publish(grasp.approach)
                 grasp_move_done = self.robot.move(target=grasp_pose_stamped)
-                
                 
                 if grasp_move_done:
                     grasp_performed = True
