@@ -1,0 +1,3 @@
+std_msgs/Bool status_to_set
+---
+std_msgs/Bool new_status

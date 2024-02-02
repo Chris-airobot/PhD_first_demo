@@ -1,0 +1,17 @@
+<launch>
+    <include file="$(find first_demo)/launch/setup_robot.launch"/>
+    <include file="$(find first_demo)/launch/setup_435_camera.launch"/>
+    <include file="$(find first_demo)/launch/aruco_ros_single.launch"/>
+    <include file="$(find first_demo)/launch/publish_camera.launch"/>
+    <include file="$(find first_demo)/launch/camera_processing.launch"/>
+
+
+    <node name="detect_grasps" pkg="gpd_ros" type="detect_grasps" output="screen">
+        <param name="cloud_type" value="0" />
+        <param name="cloud_topic" value="/cloud_to_get_grasps_on" />
+        <param name="config_file" value="/home/riot/kinova_gen3_lite/src/first_demo/config/ros_eigen_params.cfg" />
+        <param name="rviz_topic" value="plot_grasps" />
+    </node>
+
+
+</launch>
