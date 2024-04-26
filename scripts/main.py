@@ -170,8 +170,9 @@ class FirstDemo:
                 # Turn the roll pitch yaw thing into the quaternion axis
                 
                 quat = pyquaternion.Quaternion(matrix=rot)
-                pos = grasp.position
+                pos: Point = grasp.position
                 
+                pos.z -= 0.05
                 
                 quat = [0.005311705479287762, 0.7192909056869605, -0.6941433696979334, 0.027520194136891465]
                 
@@ -203,9 +204,7 @@ class FirstDemo:
                 if abs(self.init_grasping_pose[0]-self.robot.arm_group.get_current_joint_values()[0]) <= 0.001:
                     moved = False
                 
-                print(f'init_grasping_pose is :{self.init_grasping_pose}')
-                print(f'current_joint_values is :{self.robot.arm_group.get_current_joint_values()}')
-                
+
                 
                 if grasp_move_done and moved:
                     grasp_performed = True
@@ -223,8 +222,9 @@ class FirstDemo:
                         
                         
             # Grasped the object
-            self.robot.move_gripper(0.1)
+            self.robot.move_gripper(0.17)
 
+            self.left = True
             self.robot.demo_move(self.left)
             self.robot.move_gripper(1)
             

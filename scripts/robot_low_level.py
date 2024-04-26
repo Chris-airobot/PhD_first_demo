@@ -140,7 +140,7 @@ class RobotInitialization:
     
     
     
-    def cb_action_topic(self, notif):
+    def cb_action_topic(self, notif: ActionNotification):
         self.last_action_notif_type = notif.action_event
     
     def FillCartesianWaypoint(self, new_x, new_y, new_z, new_theta_x, new_theta_y, new_theta_z, blending_radius):

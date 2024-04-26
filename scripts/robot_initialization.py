@@ -152,12 +152,12 @@ class RobotInitialization:
         # self.move_gripper(0.85)
         # Calibration pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
-        joint_values[0] = -27 * pi/180
-        joint_values[1] = -1 * pi / 180
-        joint_values[2] = 106 * pi / 180
-        joint_values[3] = 67 * pi / 180
-        joint_values[4] = -98 * pi / 180
-        joint_values[5] = -19 * pi / 180
+        joint_values[0] = -17 * pi/180
+        joint_values[1] = -38 * pi / 180
+        joint_values[2] = 72 * pi / 180
+        joint_values[3] = 88 * pi / 180
+        joint_values[4] = -112 * pi / 180
+        joint_values[5] = -63 * pi / 180
         self.arm_group.go(joint_values, wait=True)
         
     def move(self, target):
@@ -240,18 +240,21 @@ class RobotInitialization:
         self.arm_group.set_joint_value_target(pose, True)
         self.arm_group.go(wait=True)
         
-        rospy.sleep(3)
+        rospy.sleep(1)
         # move left    
         pose: PoseStamped = self.arm_group.get_current_pose()
-        print(f"now the pose is:{pose}")
+        
+        quat = [0.005311705479287762, 0.7192909056869605, -0.6941433696979334, 0.027520194136891465]
         
         if left:
-            pose.pose.position.x = random.uniform(0.15, 0.5)
-            pose.pose.position.y = random.uniform(0.2, 0.4)
+            # pose.pose.position.x = random.uniform(0.2, 0.5)
+            # pose.pose.position.y = random.uniform(0.3, 0.5)
+            pose.pose.position.y += 0.5
+            pose.pose.orientation = Quaternion(x=quat[1], y=quat[2], z=quat[3], w=quat[0])
         self.arm_group.set_joint_value_target(pose, True)
         self.arm_group.go(wait=True)
-        print(f'After changes: {pose}')
-        rospy.sleep(3)
+        
+        rospy.sleep(1)
         
         
         # Go downwards
@@ -259,7 +262,6 @@ class RobotInitialization:
         pose.pose.position.z -= 0.1
         self.arm_group.set_joint_value_target(pose, True)
         self.arm_group.go(wait=True)
-
         
         # Release the gripper
         self.move_gripper(1)
@@ -271,7 +273,7 @@ class RobotInitialization:
 if __name__ == "__main__":
     rospy.init_node("test")
     robot = RobotInitialization()
-    # robot.camera_calibration_pose()
+    robot.camera_calibration_pose()
     # robot.init_pose()
     
     rospy.logwarn(robot.get_cartesion_pose())
