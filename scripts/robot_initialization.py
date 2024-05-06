@@ -152,12 +152,12 @@ class RobotInitialization:
         # self.move_gripper(0.85)
         # Calibration pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
-        joint_values[0] = -17 * pi/180
-        joint_values[1] = -38 * pi / 180
-        joint_values[2] = 72 * pi / 180
-        joint_values[3] = 88 * pi / 180
-        joint_values[4] = -112 * pi / 180
-        joint_values[5] = -63 * pi / 180
+        joint_values[0] = -5 * pi/180
+        joint_values[1] = -55 * pi / 180
+        joint_values[2] = 111 * pi / 180
+        joint_values[3] = -14 * pi / 180
+        joint_values[4] = 118 * pi / 180
+        joint_values[5] = 92 * pi / 180
         self.arm_group.go(joint_values, wait=True)
         
     def move(self, target):
