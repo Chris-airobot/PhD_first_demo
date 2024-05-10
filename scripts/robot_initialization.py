@@ -273,7 +273,7 @@ class RobotInitialization:
 if __name__ == "__main__":
     rospy.init_node("test")
     robot = RobotInitialization()
-    robot.camera_calibration_pose()
-    # robot.init_pose()
+    # robot.camera_calibration_pose()
+    robot.init_pose()
     
     rospy.logwarn(robot.get_cartesion_pose())
