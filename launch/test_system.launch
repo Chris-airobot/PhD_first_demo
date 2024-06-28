@@ -1,0 +1,35 @@
+<launch>
+    <arg name="middle_serial" default="242322078188" />
+
+
+    <include file="$(find first_demo)/launch/camera_processing.launch"/>
+
+    <include file="$(find first_demo)/launch/setup_robot.launch"/>
+    
+    <node name="left_camera_broadcast" pkg="box_detection" type="publish_camera.py" output="screen" required="true">
+        <param name="input_file" value="/home/riot/kinova_gen3_lite/src/ggcnn/cfg/cam_pose.txt"/>
+        <param name="parent_frame" value="base_link"/>
+        <param name="child_frame" value="camera_link"/>
+    </node>
+
+    
+    <!-- Group for the first camera to provide a unique namespace and node name -->
+    
+    <param name="serial_no" value="$(arg middle_serial)" type="str"/>
+    <include file="$(find heightmap)/launch/camera.launch" >
+        <arg name="serial_no" value="$(arg middle_serial)" />
+        <arg name="enable_pointcloud" value="true"/>
+        <arg name="enable_sync"       value="true"/>
+    </include>
+   
+
+
+    <node name="detect_grasps" pkg="gpd_ros" type="detect_grasps" output="screen">
+        <param name="cloud_type" value="0" />
+        <param name="cloud_topic" value="/cloud_to_get_grasps_on" />
+        <param name="config_file" value="/home/riot/kinova_gen3_lite/src/first_demo/config/ros_eigen_params.cfg" />
+        <param name="rviz_topic" value="plot_grasps" />
+    </node>
+
+
+</launch>

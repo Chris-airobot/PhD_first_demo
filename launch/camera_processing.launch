@@ -29,7 +29,6 @@
 
   <node name="realsense_processing" pkg="first_demo" type="realsense_processing.py">
     <param name="pcl_fwd_status" type="boolean" value="false" />
-    <param name="fwd_pcd_with_timer" type="boolean" value="false" />
   </node>
 
 

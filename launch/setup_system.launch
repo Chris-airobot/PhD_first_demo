@@ -1,10 +1,10 @@
 <launch>
     <include file="$(find first_demo)/launch/setup_robot.launch"/>
     <include file="$(find first_demo)/launch/setup_435_camera.launch"/>
-    <include file="$(find first_demo)/launch/aruco_ros_single.launch"/>
-    <include file="$(find first_demo)/launch/publish_camera.launch"/>
-    <include file="$(find first_demo)/launch/camera_processing.launch"/>
-    <include file="$(find ggcnn)/launch/ggcnn_service.launch"/>
+    <!-- <include file="$(find first_demo)/launch/aruco_ros_single.launch"/> -->
+    <!-- <include file="$(find first_demo)/launch/publish_camera.launch"/> -->
+    <!-- <include file="$(find first_demo)/launch/camera_processing.launch"/> -->
+    <!-- <include file="$(find ggcnn)/launch/ggcnn_service.launch"/> -->
 
     <node name="detect_grasps" pkg="gpd_ros" type="detect_grasps" output="screen">
         <param name="cloud_type" value="0" />

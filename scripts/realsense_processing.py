@@ -20,7 +20,6 @@ class RealSenseProcessor:
     def __init__(self) -> None:
         rospy.init_node("realsense_processing", anonymous=True)
 
-        self.fwd_pcd_with_timer = rospy.get_param("/realsense_processing/fwd_pcd_with_timer")
         
         rospy.wait_for_service("assemble_scans2")
 

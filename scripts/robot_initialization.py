@@ -13,7 +13,7 @@ from geometry_msgs.msg import Pose, Point,Quaternion, PoseStamped, PoseArray
 from std_msgs.msg import Header
 from tf.transformations import euler_from_quaternion
 import random
-
+import numpy as np
 # from tf2_geometry_msgs import PoseStamped
 PlanTuple = Tuple[bool, RobotTrajectory, float, MoveItErrorCodes]
 
@@ -45,6 +45,12 @@ class RobotInitialization:
         self.init_scene()
         # self.init_pose()
         
+        self.andy =  np.array([0, 
+                               -82 * pi/180, 
+                               99 * pi/180, 
+                               -90 * pi/180, 
+                               92 * pi/180, 
+                               90 * pi/180])
         
     def move_gripper(self, value: float):
         '''
@@ -79,7 +85,7 @@ class RobotInitialization:
         table_pose.header.frame_id = "base_link"
         table_pose.pose.position.x = 0  
         table_pose.pose.position.y = 0  
-        table_pose.pose.position.z = -table_size[2]/2-0.050001 
+        table_pose.pose.position.z = -table_size[2]/2-0.00001 
         table_name = "table"
         self.scene.add_box(table_name, table_pose, size=table_size)
 
@@ -152,12 +158,12 @@ class RobotInitialization:
         # self.move_gripper(0.85)
         # Calibration pose of the robot
         joint_values = self.arm_group.get_current_joint_values()
-        joint_values[0] = -5 * pi/180
-        joint_values[1] = -55 * pi / 180
-        joint_values[2] = 111 * pi / 180
-        joint_values[3] = -14 * pi / 180
-        joint_values[4] = 118 * pi / 180
-        joint_values[5] = 92 * pi / 180
+        joint_values[0] = 6 * pi/180
+        joint_values[1] = -69 * pi / 180
+        joint_values[2] = 94 * pi / 180
+        joint_values[3] = -90 * pi / 180
+        joint_values[4] = 129 * pi / 180
+        joint_values[5] = 82 * pi / 180
         self.arm_group.go(joint_values, wait=True)
         
     def move(self, target):
@@ -274,6 +280,7 @@ if __name__ == "__main__":
     rospy.init_node("test")
     robot = RobotInitialization()
     # robot.camera_calibration_pose()
-    robot.init_pose()
-    
-    rospy.logwarn(robot.get_cartesion_pose())
+    # robot.init_pose()
+    # robot.move(robot.andy)
+    robot.reach_joint_angles(robot.andy)
+    # rospy.logwarn(robot.get_cartesion_pose())
