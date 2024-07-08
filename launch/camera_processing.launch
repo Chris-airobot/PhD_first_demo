@@ -1,38 +1,67 @@
 <launch>
-
     <!-- Known transform copied from realsense-ros driver in ros2 -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="camera_internal_frame_broadcaster_1" 
-      args="0.0 0.0 0.0   0.0 0.0 0.0 1.0 camera_link camera_color_frame" />
+      args="0.0 0.0 0.0   0.0 0.0 0.0 1.0 right_camera_link right_camera_color_frame" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="camera_internal_frame_broadcaster_2"
-      args="0.0 0.0 0.0   -0.5 0.5 -0.5 0.5 camera_color_frame camera_color_optical_frame" />
+      args="0.0 0.0 0.0   -0.5 0.5 -0.5 0.5 right_camera_color_frame right_camera_color_optical_frame" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="camera_internal_frame_broadcaster_3"
-      args="0.0 0.0 0.0   0.0 0.0 0.0 1.0 camera_link camera_depth_frame" />
+      args="0.0 0.0 0.0   0.0 0.0 0.0 1.0 right_camera_link right_camera_depth_frame" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="camera_internal_frame_broadcaster_4"
-      args="0.0 0.0 0.0   -0.5 0.5 -0.5 0.5 camera_depth_frame camera_depth_optical_frame" />
+      args="0.0 0.0 0.0   -0.5 0.5 -0.5 0.5 right_camera_depth_frame right_camera_depth_optical_frame" />
+
+
+    <!-- Known transform copied from realsense-ros driver in ros2 -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_internal_frame_broadcaster_5" 
+      args="0.0 0.0 0.0   0.0 0.0 0.0 1.0 left_camera_link left_camera_color_frame" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_internal_frame_broadcaster_6"
+      args="0.0 0.0 0.0   -0.5 0.5 -0.5 0.5 left_camera_color_frame left_camera_color_optical_frame" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_internal_frame_broadcaster_7"
+      args="0.0 0.0 0.0   0.0 0.0 0.0 1.0 left_camera_link left_camera_depth_frame" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_internal_frame_broadcaster_8"
+      args="0.0 0.0 0.0   -0.5 0.5 -0.5 0.5 left_camera_depth_frame left_camera_depth_optical_frame" />
 
   <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="fake_link_transform"
       args="0.0 0.0 0.0   0.0 0.0 1.0 0.0 base_link fake_link" /> -->
 
 
+  <node name="right_processing" pkg="first_demo" type="realsense_processing.py">
+    <param name="stitcher_input_topic" value="/right_stitcher" />
+    <param name="pointcloud_topic" value="/right_camera/depth/color/points" />
+    <param name="scan_topic" value="/right_scan" />
+    <param name="laser_topic" value="/assemble_scans2_right" />
+  </node>
+
+  <node name="left_processing" pkg="first_demo" type="realsense_processing.py">
+    <param name="stitcher_input_topic" value="/left_stitcher" />
+    <param name="pointcloud_topic" value="/left_camera/depth/color/points" />
+    <param name="scan_topic" value="/left_scan" />
+    <param name="laser_topic" value="/assemble_scans2_left" />
+  </node>
 
 
 
-
-  <node type="point_cloud2_assembler" pkg="laser_assembler" name="my_assembler">
+  <node type="point_cloud2_assembler" pkg="laser_assembler" name="my_left_assembler">
     <!-- cloud = topic to recieve clouds on -->
-    <remap from="cloud" to="/pcl_stitcher_input_processed"/> 
+    <remap from="cloud" to="/left_stitcher"/> 
     <param name="max_clouds" type="int" value="400" />
     <param name="tf_cache_time_secs" type="double" value="45.0" />
     <!-- I think this sets the fixed frame to be base_link, and tf takes care of everything else-->
     <param name="fixed_frame" type="string" value="base_link" />
+    <remap from="assemble_scans2" to="assemble_scans2_left"/>
   </node>
 
-  <node name="realsense_processing" pkg="first_demo" type="realsense_processing.py">
-    <param name="pcl_fwd_status" type="boolean" value="false" />
+  <node type="point_cloud2_assembler" pkg="laser_assembler" name="my_right_assembler">
+    <!-- cloud = topic to recieve clouds on -->
+    <remap from="cloud" to="/right_stitcher"/> 
+    <param name="max_clouds" type="int" value="400" />
+    <param name="tf_cache_time_secs" type="double" value="45.0" />
+    <!-- I think this sets the fixed frame to be base_link, and tf takes care of everything else-->
+    <param name="fixed_frame" type="string" value="base_link" />
+    <remap from="assemble_scans2" to="assemble_scans2_right"/>
   </node>
 
 
-  <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
+  <!-- <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
 
   <node pkg="nodelet" type="nodelet" name="cropbox" args="load pcl/CropBox pcl_manager" output="screen">
     <remap from="~input" to="/pcl_stitcher_input_raw" />
@@ -41,6 +70,6 @@
       keep_organized: False
       input_frame: /base_link
     </rosparam>
-  </node>
+  </node> -->
 
 </launch>

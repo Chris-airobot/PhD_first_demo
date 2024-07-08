@@ -405,7 +405,7 @@ class GEN3_LITE(ERobot):
             else:
                 rospy.loginfo("Waiting for pose to finish...")
 
-            self.wait_for_action_end_or_abort()
+            return self.wait_for_action_end_or_abort()
             
             
             
@@ -679,14 +679,19 @@ if __name__ == "__main__":
     rospy.init_node("robot_model")
     kinova_lite = GEN3_LITE()
     kinova_lite.clear()
-    # kinova_lite.move_trajectories(kinova_lite.home)
-
+    # kinova_lite.move_trajectories(kinova_lite.pre_grasp)
+    position = [0.4, 0, 0.1]
+    tool_orientation = [180, 0, -90]
+    while True:
+        kinova_lite.visualize_pose(position, tool_orientation)
+    # kinova_lite.move_pose(position, tool_orientation)
+    rospy.spin()
     
     # # Calibration process
     # kinova_lite.move_trajectories(kinova_lite.calibration)
-    position = [0.4, 0, 0.1]
-    tool_orientation = [90, 0, 90]
+    # position = [0.4, 0, 0.1]
+    # tool_orientation = [90, 0, 90]
     
-    kinova_lite.move_pose(position, tool_orientation)
+    # kinova_lite.move_pose(position, tool_orientation)
     
     

@@ -1,35 +1,72 @@
 <launch>
-    <arg name="middle_serial" default="242322078188" />
+
+    <arg name="serial_no_camera1"    			default="243522073159"/> 			<!-- Note: Replace with actual serial number -->
+    <arg name="serial_no_camera2"    			default="242222070936"/> 			<!-- Note: Replace with actual serial number -->
+    <arg name="camera1"              			default="left_camera"/>		<!-- Note: Replace with camera name -->
+    <arg name="camera2"              			default="right_camera"/>		<!-- Note: Replace with camera name -->
+    <arg name="tf_prefix_camera1"         default="$(arg camera1)"/>
+    <arg name="tf_prefix_camera2"         default="$(arg camera2)"/>
+    <arg name="initial_reset"             default="false"/>
+    <arg name="reconnect_timeout"         default="6.0"/>
+
+    <group ns="$(arg camera1)"> 
+        <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml">
+        <arg name="serial_no"             value="$(arg serial_no_camera1)"/>
+        <arg name="tf_prefix"         		value="$(arg tf_prefix_camera1)"/>
+        <arg name="initial_reset"         value="$(arg initial_reset)"/>
+        <arg name="reconnect_timeout"     value="$(arg reconnect_timeout)"/>
+        <arg name="enable_pointcloud" value="true"/>
+        <arg name="enable_sync"       value="true"/>
+        </include>
+    </group>
+
+    <group ns="$(arg camera2)">
+        <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml">
+        <arg name="serial_no"             value="$(arg serial_no_camera2)"/>
+        <arg name="tf_prefix"		          value="$(arg tf_prefix_camera2)"/>
+        <arg name="initial_reset"         value="$(arg initial_reset)"/>
+        <arg name="reconnect_timeout"     value="$(arg reconnect_timeout)"/>
+        <arg name="enable_pointcloud" value="true"/>
+        <arg name="enable_sync"       value="true"/>
+        </include>
+    </group>
 
 
-    <include file="$(find first_demo)/launch/camera_processing.launch"/>
 
-    <include file="$(find first_demo)/launch/setup_robot.launch"/>
     
+
     <node name="left_camera_broadcast" pkg="box_detection" type="publish_camera.py" output="screen" required="true">
-        <param name="input_file" value="/home/riot/kinova_gen3_lite/src/ggcnn/cfg/cam_pose.txt"/>
+            <param name="input_file" value="/home/riot/kinova_gen3_lite/src/heightmap/real/camera_pose_left.txt"/>
+            <param name="parent_frame" value="base_link"/>
+            <param name="child_frame" value="left_camera_link"/>
+    </node>
+
+    <node name="right_camera_broadcast" pkg="box_detection" type="publish_camera.py" output="screen" required="true">
+        <param name="input_file" value="/home/riot/kinova_gen3_lite/src/heightmap/real/camera_pose_right.txt"/>
         <param name="parent_frame" value="base_link"/>
-        <param name="child_frame" value="camera_link"/>
+        <param name="child_frame" value="right_camera_link"/>
     </node>
 
     
-    <!-- Group for the first camera to provide a unique namespace and node name -->
     
-    <param name="serial_no" value="$(arg middle_serial)" type="str"/>
-    <include file="$(find heightmap)/launch/camera.launch" >
-        <arg name="serial_no" value="$(arg middle_serial)" />
-        <arg name="enable_pointcloud" value="true"/>
-        <arg name="enable_sync"       value="true"/>
-    </include>
-   
+
+    <include file="$(find first_demo)/launch/setup_robot.launch"/>
 
 
-    <node name="detect_grasps" pkg="gpd_ros" type="detect_grasps" output="screen">
+    <include file="$(find first_demo)/launch/camera_processing.launch"/> 
+
+    <node name="left_grasp" pkg="gpd_ros" type="detect_grasps" output="screen">
         <param name="cloud_type" value="0" />
-        <param name="cloud_topic" value="/cloud_to_get_grasps_on" />
-        <param name="config_file" value="/home/riot/kinova_gen3_lite/src/first_demo/config/ros_eigen_params.cfg" />
+        <param name="cloud_topic" value="/left_cloud" />
+        <param name="config_file" value="/home/riot/kinova_gen3_lite/src/first_demo/config/ros_eigen_params_left.cfg" />
         <param name="rviz_topic" value="plot_grasps" />
     </node>
 
+    <node name="right_grasp" pkg="gpd_ros" type="detect_grasps" output="screen">
+        <param name="cloud_type" value="0" />
+        <param name="cloud_topic" value="/right_cloud" />
+        <param name="config_file" value="/home/riot/kinova_gen3_lite/src/first_demo/config/ros_eigen_params_right.cfg" />
+        <param name="rviz_topic" value="plot_grasps" />
+    </node>
 
 </launch>

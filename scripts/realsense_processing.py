@@ -19,37 +19,37 @@ class RealSenseProcessor:
     # Class that provides services to easily interface with an attached RealSense camera
     def __init__(self) -> None:
         rospy.init_node("realsense_processing", anonymous=True)
-
+        stitcher_input_topic = rospy.get_param('~stitcher_input_topic')
+        pcd_topic = rospy.get_param('~pointcloud_topic')
+        scan_topic = rospy.get_param('~scan_topic')
+        laser_topic = rospy.get_param('~laser_topic')
         
-        rospy.wait_for_service("assemble_scans2")
+        rospy.wait_for_service(laser_topic)
 
-        self.assemble_pcds = rospy.ServiceProxy("assemble_scans2", AssembleScans2)
+        self.assemble_pcds = rospy.ServiceProxy(laser_topic, AssembleScans2)
         
-        # Self-created service for suggesting the robot starts working for pcd, reseponse is boolean
-        fwd_srv = rospy.Service(
-            "/realsense_processing/set_pcd_fwd_status_server", PCLFwdStatus, self.set_pcl_fwd_status_callback
-        )
         
         # Self-created service for stitching all clouds, reseponse is the stitched point clouds
-        stitch_srv = rospy.Service(
-            "/realsense_processing/stitch_pcd_service", AssembleScans2, self.stitch_pcds_callback
-        )
+        stitch_srv = rospy.Service(scan_topic, AssembleScans2, self.stitch_pcds_callback)
 
         # self.tf_listener = init_tf_tree()
 
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(30))
         self.tl = tf2_ros.TransformListener(self.tf_buffer)
 
+
         
-        self.pcd_forward_pub = rospy.Publisher("/pcl_stitcher_input_raw", PointCloud2, queue_size=1)
+        
+        self.pcd_forward_pub = rospy.Publisher(stitcher_input_topic, PointCloud2, queue_size=1)
         
         
         # Getting the most recent point cloud data which is transformed into the robot base already
         # And store it into the self.pcl_latest
         self.pcl_latest = None
         self.pcd_reader_sub = rospy.Subscriber(
-            "/camera/depth/color/points", PointCloud2, self.pcd_callback
+            pcd_topic, PointCloud2, self.pcd_callback
         )
+        
         while self.pcl_latest is None:
             rospy.loginfo("Waiting for point cloud")
             rospy.sleep(rospy.Duration(nsecs=200))
@@ -59,13 +59,6 @@ class RealSenseProcessor:
         # Publish the assembled point cloud data and nodelet is suppoed to process this in the launch file
         fwder = rospy.Timer(rospy.Duration(secs=2, nsecs=0), self.fwd_latest_pcd_timer_callback)
 
-        # if self.fwd_pcd_with_timer:
-        #     # Actual forwarder
-        #     fwder = rospy.Timer(rospy.Duration(secs=2, nsecs=0), self.fwd_latest_pcd_timer_callback)
-        # else:
-        #     stitch_append_srv = rospy.Service(
-        #         "/realsense_processing/add_pcd_to_assembler", Trigger, self.fwd_latest_pcd_srv_callback
-        #     )
 
         
         
@@ -74,12 +67,6 @@ class RealSenseProcessor:
         rospy.spin()
 
 
-
-    def set_pcl_fwd_status_callback(self, req: PCLFwdStatusRequest) -> PCLFwdStatusResponse:
-        rospy.set_param("/realsense_processing/pcl_fwd_status", req.status_to_set.data)
-        return PCLFwdStatusResponse(
-            Bool(data=rospy.get_param("/realsense_processing/pcl_fwd_status"))
-        )
 
 
 
@@ -139,16 +126,6 @@ class RealSenseProcessor:
         # if rospy.get_param("/realsense_processing/pcl_fwd_status"):
         self.pcd_forward_pub.publish(self.pcl_latest)
 
-    # def fwd_latest_pcd_srv_callback(self, req: TriggerRequest):
-    #     if rospy.get_param("/realsense_processing/pcl_fwd_status"):
-    #         self.pcd_forward_pub.publish(self.pcl_latest)
-    #         return TriggerResponse(success=True)
-    #     else:
-    #         rospy.loginfo(
-    #             "Pcd forwarding is not active, set '/realsense_processing/"
-    #             "pcl_fwd_status' to 'True' to enable!"
-    #         )
-    #         return TriggerResponse(success=False)
 
 
 if __name__ == "__main__":
