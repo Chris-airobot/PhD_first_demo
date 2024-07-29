@@ -280,7 +280,7 @@ if __name__ == "__main__":
     rospy.init_node("test")
     robot = RobotInitialization()
     # robot.camera_calibration_pose()
-    # robot.init_pose()
+    robot.init_pose()
     # robot.move(robot.andy)
     robot.reach_joint_angles(robot.andy)
     # rospy.logwarn(robot.get_cartesion_pose())

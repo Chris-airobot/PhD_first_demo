@@ -36,9 +36,9 @@
     
 
     <node name="left_camera_broadcast" pkg="box_detection" type="publish_camera.py" output="screen" required="true">
-            <param name="input_file" value="/home/riot/kinova_gen3_lite/src/heightmap/real/camera_pose_left.txt"/>
-            <param name="parent_frame" value="base_link"/>
-            <param name="child_frame" value="left_camera_link"/>
+        <param name="input_file" value="/home/riot/kinova_gen3_lite/src/heightmap/real/camera_pose_left.txt"/>
+        <param name="parent_frame" value="base_link"/>
+        <param name="child_frame" value="left_camera_link"/>
     </node>
 
     <node name="right_camera_broadcast" pkg="box_detection" type="publish_camera.py" output="screen" required="true">
@@ -47,8 +47,20 @@
         <param name="child_frame" value="right_camera_link"/>
     </node>
 
+
+    <!-- <node name="left_table_detection" pkg="first_demo" type="detect_table.py" output="screen" required="true">
+        <param name="image_topic" value="/left_camera/color/image_raw"/>
+        <param name="detection_topic" value="/left_detection"/>
+        <param name="side" type="bool" value="true"/>
+    </node>
+
+    <node name="right_table_detection" pkg="first_demo" type="detect_table.py" output="screen" required="true">
+        <param name="image_topic" value="/right_camera/color/image_raw"/>
+        <param name="detection_topic" value="/right_detection"/>
+        <param name="side" type="bool" value="false"/>
+    </node> -->
     
-    
+
 
     <include file="$(find first_demo)/launch/setup_robot.launch"/>
 
@@ -68,5 +80,8 @@
         <param name="config_file" value="/home/riot/kinova_gen3_lite/src/first_demo/config/ros_eigen_params_right.cfg" />
         <param name="rviz_topic" value="plot_grasps" />
     </node>
+
+
+
 
 </launch>

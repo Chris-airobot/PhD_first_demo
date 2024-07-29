@@ -20,6 +20,7 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Point,Quaternion, PoseStamped, PoseArray
 import pyrealsense2 as rs
 import tf
+import random
 
 
 
@@ -192,6 +193,13 @@ class GEN3_LITE(ERobot):
                                      65  * pi/180, 
                                      76  * pi/180])
         
+        self.pre_right_grasp = np.array([ 13  * pi/180, 
+                                           0  * pi/180, 
+                                         120  * pi/180, 
+                                         -90  * pi/180, 
+                                         -60  * pi/180, 
+                                         106  * pi/180])
+        
         
         
         self.pre_push = np.array([ 13  * pi/180, 
@@ -249,6 +257,17 @@ class GEN3_LITE(ERobot):
     def init_pose(self):
         self.move_trajectories(self.pre_grasp)
         
+        
+    def grasp_prep(self, left):
+        """Pregrasp movement for the demo
+
+        Args:
+            left: a boolean for indicating whether working in the left workspace or right workspace
+        """
+        if left:
+            self.move_trajectories(self.pre_grasp)
+        else:
+            self.move_trajectories(self.pre_right_grasp)
         
         
     def init_scene(self):
@@ -489,7 +508,20 @@ class GEN3_LITE(ERobot):
         self.stop()
 
 
-
+    def demo_release(self, left):
+        upper_x_limit = 0.46 
+        lower_x_limit = 0.2 
+        
+        upper_y_limit = 0.4 if left else -0.2
+        lower_y_limit = 0.2 if left else -0.4
+        
+        work_space_x = random.uniform(lower_x_limit, upper_x_limit)
+        work_space_y = random.uniform(lower_y_limit, upper_y_limit)
+        
+        orientation = [180, 0, -90]
+        
+        print(f'The planned pos is:{work_space_x, work_space_y}')
+        self.move_pose([work_space_x, work_space_y, 0.1], orientation)
 
 
             
@@ -679,13 +711,15 @@ if __name__ == "__main__":
     rospy.init_node("robot_model")
     kinova_lite = GEN3_LITE()
     kinova_lite.clear()
+    # kinova_lite.init_pose()
+    # kinova_lite.clear()
     # kinova_lite.move_trajectories(kinova_lite.pre_grasp)
-    position = [0.4, 0, 0.1]
-    tool_orientation = [180, 0, -90]
-    while True:
-        kinova_lite.visualize_pose(position, tool_orientation)
+    # position = [0.33, 0.35, 0.1]
+    # tool_orientation = [180, 0, -90]
+    # while True:
+    #     kinova_lite.visualize_pose(position, tool_orientation)
     # kinova_lite.move_pose(position, tool_orientation)
-    rospy.spin()
+    # rospy.spin()
     
     # # Calibration process
     # kinova_lite.move_trajectories(kinova_lite.calibration)
